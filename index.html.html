@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESM Salesforce Revenue & CM Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── Konecta Brand Palette ─────────────────────────────────────────────────── */
+  :root {
+    --k-navy:    #06152B;   /* Konecta deep navy */
+    --k-blue:    #0057FF;   /* Konecta electric blue */
+    --k-blue2:   #0041CC;   /* darker blue hover */
+    --k-sky:     #E8F0FF;   /* light blue tint */
+    --k-white:   #FFFFFF;
+    --k-off:     #F4F6FB;   /* off-white page bg */
+    --k-card:    #FFFFFF;
+    --k-border:  #DDE3F0;
+    --k-muted:   #6B7899;
+    --k-text:    #0D1B3E;
+    --k-text2:   #3D4F72;
+    --k-success: #00B87C;
+    --k-danger:  #E53939;
+    --k-warn:    #F59E0B;
+    --k-accent:  #0057FF;
+    --radius:    10px;
+    --shadow:    0 1px 3px rgba(0,0,0,.07), 0 4px 12px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 16px rgba(0,87,255,.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--k-off);
+    color: var(--k-text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  /* ── Top Nav Bar ─────────────────────────────────────────────────────────────*/
+  .topbar {
+    background: #1211E6; /* Matched exactly to the uploaded logo blue */
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  }
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .topbar-logo-img {
+    height: auto;
+    max-height: 28px;
+    display: block;
+  }
+  .topbar-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.3px;
+  }
+  .topbar-name span { color: var(--k-white); }
+  .topbar-badge {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.45);
+    padding: 3px 8px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 20px;
+  }
+
+  /* ── Page wrapper ────────────────────────────────────────────────────────────*/
+  .page { max-width: 1200px; margin: 0 auto; padding: 28px 24px 40px; }
+
+  /* ── Hero strip ──────────────────────────────────────────────────────────────*/
+  .hero {
+    background: linear-gradient(135deg, var(--k-navy) 0%, #0A2257 100%);
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    right: -40px; top: -60px;
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,87,255,.3) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-text h1 {
+    font-size: 22px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .hero-text p {
+    font-size: 12px;
+    color: rgba(255,255,255,.55);
+    line-height: 1.55;
+    max-width: 520px;
+  }
+  .hero-text p strong { color: rgba(255,255,255,.75); font-weight: 600; }
+  .hero-stat {
+    text-align: center;
+    flex-shrink: 0;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px;
+    padding: 14px 22px;
+  }
+  .hero-stat .label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,.75); margin-bottom: 4px; font-weight: 600; }
+  .hero-stat .val { font-size: 22px; font-weight: 800; color: #00e5ff; font-family: 'JetBrains Mono', monospace; }
+  .hero-stat .unit { font-size: 10px; color: rgba(255,255,255,.6); margin-top: 2px; }
+
+  /* ── Layout grid ─────────────────────────────────────────────────────────────*/
+  .layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+  @media(max-width:900px){ .layout { grid-template-columns: 1fr; } }
+
+  /* ── Card / Panel ─────────────────────────────────────────────────────────────*/
+  .card {
+    background: var(--k-card);
+    border: 1px solid var(--k-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+    margin-bottom: 16px;
+  }
+  .card:last-child { margin-bottom: 0; }
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--k-muted);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--k-blue);
+    flex-shrink: 0;
+  }
+
+  /* ── Field groups ─────────────────────────────────────────────────────────────*/
+  .fg { margin-bottom: 16px; }
+  .fg:last-child { margin-bottom: 0; }
+  .fg-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--k-text2);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .fg-label .hint {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--k-blue);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  input[type="number"], select {
+    width: 100%;
+    background: var(--k-off);
+    border: 1.5px solid var(--k-border);
+    border-radius: 8px;
+    color: var(--k-text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color .18s, box-shadow .18s;
+    -webkit-appearance: none;
+  }
+  input[type="number"]:focus, select:focus {
+    border-color: var(--k-blue);
+    box-shadow: 0 0 0 3px rgba(0,87,255,.1);
+    background: white;
+  }
+  select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7899' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-color: var(--k-off);
+    padding-right: 36px;
+  }
+  select option { background: white; }
+
+  /* ── Toggle group ─────────────────────────────────────────────────────────────*/
+  .tg {
+    display: flex;
+    background: var(--k-off);
+    border: 1.5px solid var(--k-border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .tg label { flex: 1; display: block; text-align: center; margin: 0; }
+  .tg input[type="radio"] { display: none; }
+  .tg label span {
+    display: block;
+    padding: 8px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--k-muted);
+    transition: all .18s;
+  }
+  .tg input[type="radio"]:checked + span {
+    background: var(--k-blue);
+    color: white;
+  }
+
+  /* ── Range ───────────────────────────────────────────────────────────────────*/
+  .range-row { display: flex; align-items: center; gap: 12px; }
+  input[type="range"] {
+    flex: 1; -webkit-appearance: none;
+    height: 4px; border-radius: 2px;
+    background: var(--k-border); outline: none; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--k-blue); box-shadow: 0 0 0 3px rgba(0,87,255,.2);
+    cursor: pointer; transition: transform .15s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  .range-val { font-size: 14px; font-weight: 700; color: var(--k-blue); min-width: 42px; text-align: right; font-family: 'JetBrains Mono', monospace; }
+
+  /* ── Rate note ───────────────────────────────────────────────────────────────*/
+  .rate-note {
+    font-size: 11px;
+    color: var(--k-muted);
+    margin-top: 7px;
+    padding: 6px 10px;
+    background: var(--k-sky);
+    border-radius: 6px;
+    border-left: 3px solid var(--k-blue);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── Tabs ─────────────────────────────────────────────────────────────────────*/
+  .tabs { display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 2px solid var(--k-border); padding-bottom: 0; }
+  .tab {
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--k-muted);
+    border-radius: 6px 6px 0 0;
+    transition: all .18s;
+    user-select: none;
+    margin-bottom: -2px;
+    border-bottom: 2px solid transparent;
+  }
+  .tab:hover { color: var(--k-text); background: var(--k-sky); }
+  .tab.active { color: var(--k-blue); border-bottom-color: var(--k-blue); background: transparent; }
+  .tc { display: none; }
+  .tc.active { display: block; }
+
+  /* ── Section header ──────────────────────────────────────────────────────────*/
+  .sec-hdr {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--k-blue);
+    margin: 16px 0 8px;
+  }
+
+  /* ── Roles table ──────────────────────────────────────────────────────────────*/
+  .rt { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+  .rt th {
+    text-align: center; color: var(--k-muted); padding: 8px 4px 6px;
+    font-size: 10px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase;
+    border-bottom: 2px solid var(--k-border);
+  }
+  .rt th:first-child { text-align: left; width: 115px; }
+  .rt td {
+    padding: 7px 4px; border-bottom: 1px solid #EEF1F8;
+    vertical-align: middle; text-align: center; color: var(--k-text2);
+  }
+  .rt td:first-child { text-align: left; font-weight: 600; color: var(--k-text); white-space: nowrap; }
+  .rt tbody tr:hover td { background: #F9FBFF; }
+  .rt input[type="number"] {
+    font-size: 12px; padding: 5px 6px; text-align: center;
+    width: 100%; max-width: 68px; font-family: 'JetBrains Mono', monospace;
+  }
+  .rt tfoot td { font-size: 11px; font-weight: 700; color: var(--k-blue); padding: 10px 4px 4px; }
+  .rt tfoot td:first-child { text-align: left; }
+
+  /* ── IT items ────────────────────────────────────────────────────────────────*/
+  .it-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .it-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--k-off); border: 1.5px solid var(--k-border);
+    border-radius: 8px; padding: 9px 12px; cursor: pointer; transition: all .18s;
+  }
+  .it-item:hover { border-color: var(--k-blue); background: var(--k-sky); }
+  .it-item.active { border-color: var(--k-blue); background: var(--k-sky); }
+  .it-item input { display: none; }
+  .it-check {
+    width: 16px; height: 16px; border-radius: 4px;
+    border: 1.5px solid var(--k-border); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 10px; flex-shrink: 0; transition: all .18s;
+    background: white;
+  }
+  .it-item.active .it-check { background: var(--k-blue); border-color: var(--k-blue); color: white; }
+  .it-body { flex: 1; }
+  .it-name { font-size: 12px; font-weight: 600; color: var(--k-text); }
+  .it-price { font-size: 10px; color: var(--k-muted); font-family: 'JetBrains Mono', monospace; }
+
+  /* ── Summary panel ───────────────────────────────────────────────────────────*/
+  .summary { position: sticky; top: 72px; align-self: start; }
+
+  .row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12px; color: var(--k-muted); padding: 6px 0;
+    border-bottom: 1px solid #EEF1F8; gap: 8px;
+  }
+  .row:last-of-type { border-bottom: none; }
+  .row .v { font-size: 12px; color: var(--k-text); text-align: right; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+  .row.hi .v { color: var(--k-blue); font-weight: 600; }
+  .row.hi span:first-child { color: var(--k-text); font-weight: 600; }
+
+  .sep { height: 1px; background: var(--k-border); margin: 12px 0; }
+
+  /* ── TCO box ──────────────────────────────────────────────────────────────────*/
+  .tco-box {
+    margin-top: 14px;
+    background: linear-gradient(135deg, var(--k-navy) 0%, #0A2257 100%);
+    border-radius: 10px;
+    padding: 18px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .tco-box::before {
+    content: '';
+    position: absolute;
+    right: -20px; top: -30px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,87,255,.4) 0%, transparent 70%);
+  }
+  .tco-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: 6px;
+  }
+  .tco-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 30px; font-weight: 700; color: white; line-height: 1;
+  }
+  .tco-sub { font-size: 10px; color: rgba(255,255,255,.35); margin-top: 4px; }
+
+  /* ── CTA button ──────────────────────────────────────────────────────────────*/
+  .btn-primary {
+    width: 100%; margin-top: 12px; padding: 11px;
+    background: var(--k-blue); border: none; border-radius: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px; font-weight: 700; color: white;
+    cursor: pointer; letter-spacing: .3px; transition: all .18s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-primary:hover { background: var(--k-blue2); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+  /* ── Breakdown metric cards ──────────────────────────────────────────────────*/
+  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0; }
+  .metric {
+    background: var(--k-off);
+    border: 1.5px solid var(--k-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .metric .m-label { font-size: 10px; color: var(--k-muted); font-weight: 500; margin-bottom: 4px; }
+  .metric .m-val { font-size: 14px; font-weight: 700; color: var(--k-text); font-family: 'JetBrains Mono', monospace; }
+  .metric.hi { border-color: var(--k-blue); background: var(--k-sky); }
+  .metric.hi .m-val { color: var(--k-blue); }
+
+  /* ── Pricing model highlight row ─────────────────────────────────────────────*/
+  .model-result {
+    margin-top: 12px;
+    background: var(--k-blue);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .model-result .mr-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.7); }
+  .model-result .mr-val { font-size: 15px; font-weight: 700; color: white; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+
+  /* ── Alert ───────────────────────────────────────────────────────────────────*/
+  .alert {
+    display: none;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--k-danger);
+    background: rgba(229,57,53,.07);
+    border: 1px solid rgba(229,57,53,.2);
+    border-radius: 6px;
+    padding: 7px 10px;
+    margin-top: 8px;
+  }
+
+  /* ── CM note ──────────────────────────────────────────────────────────────────*/
+  .cm-note { font-size: 10px; color: var(--k-muted); font-weight: 400; }
+
+  /* ── Info box ─────────────────────────────────────────────────────────────────*/
+  .info-box {
+    font-size: 11px; color: var(--k-muted);
+    background: var(--k-sky);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  /* ── Seat grid ────────────────────────────────────────────────────────────────*/
+  .seat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .seat-item {
+    display: flex; justify-content: space-between;
+    padding: 7px 10px; background: var(--k-off);
+    border: 1px solid var(--k-border); border-radius: 6px;
+  }
+  .seat-item .s-loc { font-size: 11px; color: var(--k-muted); }
+  .seat-item .s-val { font-size: 11px; font-weight: 600; color: var(--k-text); font-family: 'JetBrains Mono', monospace; }
+
+  /* ── GM box ───────────────────────────────────────────────────────────────────*/
+  .gm-breakdown {
+    display: none; margin-top: 12px;
+    border: 1px solid var(--k-border); border-radius: 8px; overflow: hidden;
+  }
+  .gm-row {
+    display: flex; justify-content: space-between;
+    padding: 8px 12px; font-size: 12px; color: var(--k-muted);
+    border-bottom: 1px solid #EEF1F8;
+  }
+  .gm-row:last-child { border-bottom: none; background: var(--k-sky); font-weight: 600; }
+  .gm-row .gv { font-family: 'JetBrains Mono', monospace; color: var(--k-text); font-weight: 500; }
+  .gm-row:last-child .gv { color: var(--k-blue); }
+
+  /* ── GM label ─────────────────────────────────────────────────────────────────*/
+  .gm-label-row { font-size: 11px; font-weight: 600; color: var(--k-text2); margin-bottom: 6px; }
+  .gm-label-row strong { color: var(--k-blue); }
+
+  /* ── Modal ───────────────────────────────────────────────────────────────────*/
+  #qModal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(6,21,43,.75); backdrop-filter: blur(6px);
+    z-index: 100; align-items: center; justify-content: center; padding: 20px;
+  }
+  .mi {
+    background: white; border-radius: 14px; max-width: 540px; width: 100%;
+    padding: 32px; position: relative; max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+  }
+  .mi-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .mi-header h2 { font-size: 18px; font-weight: 800; color: var(--k-text); }
+  .mi-header .badge { background: var(--k-blue); color: white; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; }
+  .mi-sub { font-size: 10px; color: var(--k-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
+  #qContent { font-size: 12px; line-height: 2; color: var(--k-text2); white-space: pre-line; font-family: 'JetBrains Mono', monospace; }
+  .mi-actions { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--k-border); display: flex; gap: 10px; }
+  .btn-copy { flex: 1; padding: 10px; background: var(--k-off); border: 1.5px solid var(--k-border); border-radius: 8px; color: var(--k-text2); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .btn-done { flex: 1; padding: 10px; background: var(--k-blue); border: none; border-radius: 8px; color: white; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; }
+  .cbtn { position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--k-muted); font-size: 18px; cursor: pointer; line-height: 1; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <img src="Konecta-Logo.jpg" alt="Konecta-Logo" class="topbar-logo-img">
+  </div>
+  <div class="topbar-badge">Revenue &amp; CM Calculator</div>
+</div>
+
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-text">
+      <h1>ESM Salesforce Revenue &amp; CM Calculator</h1>
+    </div>
+    <div style="display:flex;gap:12px;flex-shrink:0">
+      <div class="hero-stat">
+        <div class="label">Monthly TCO</div>
+        <div class="val" id="heroTCO">—</div>
+        <div class="unit">live estimate</div>
+      </div>
+      <div class="hero-stat" style="border-color:rgba(0,229,160,.35);background:rgba(0,229,160,.08)">
+        <div class="label">ITY Revenue</div>
+        <div class="val" id="heroITY" style="color:#34d399">—</div>
+        <div class="unit" id="heroITYUnit">in-year estimate</div>
+      </div>
+      <div class="hero-stat" style="border-color:rgba(0,87,255,.35);background:rgba(0,87,255,.12)">
+        <div class="label">TCV</div>
+        <div class="val" id="heroTCV" style="color:#60a5fa">—</div>
+        <div class="unit" id="heroTCVUnit">total contract value</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layout">
+  <div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Service Configuration</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="fg">
+          <div class="fg-label">Agent Location</div>
+          <select id="location" onchange="onLocChange()">
+            <option value="US">🇺🇸 United States</option>
+            <option value="UK">🇬🇧 United Kingdom</option>
+            <option value="ZA">🇿🇦 South Africa</option>
+            <option value="PH">🇵🇭 Philippines</option>
+            <option value="IN">🇮🇳 India</option>
+          </select>
+        </div>
+        <div class="fg">
+          <div class="fg-label">Start Month</div>
+          <select id="startMonth" onchange="calc()">
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="fg">
+          <div class="fg-label">Engagement Model</div>
+          <div class="tg">
+            <label><input type="radio" name="model" value="onsite" checked onchange="refreshRolesTable();calc()"><span>Onsite</span></label>
+            <label><input type="radio" name="model" value="waha" onchange="refreshRolesTable();calc()"><span>WAHA</span></label>
+          </div>
+        </div>
+        <div class="fg">
+          <div class="fg-label">Display Currency</div>
+          <select id="displayCurrency" onchange="calc()">
+            <option value="USD">USD — $</option>
+            <option value="EUR">EUR — €</option>
+            <option value="GBP">GBP — £</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fg">
+        <div class="fg-label">Agent Tier</div>
+        <div class="tg">
+          <label><input type="radio" name="tier" value="1" checked onchange="onLocChange()"><span>Tier 1</span></label>
+          <label><input type="radio" name="tier" value="2" onchange="onLocChange()"><span>Tier 2 (+20%)</span></label>
+        </div>
+        <div class="rate-note" id="rateNote">Tier 1 — $17.00/hr · US</div>
+      </div>
+
+      <div class="fg">
+        <div class="fg-label">Pricing Model</div>
+        <select id="pricingModel" onchange="updatePricingNote();calc()">
+          <option value="fte">Price per FTE</option>
+          <option value="attendance">Price per Attendance Hour</option>
+          <option value="productive">Price per Productive Hour</option>
+          <option value="transaction">Price per Transaction Hour</option>
+          <option value="minute">Price per Minute</option>
+        </select>
+        <div class="rate-note" id="pricingNote" style="margin-top:7px">Calculation model active.</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="fg">
+          <div class="fg-label">Number of Agents <span class="hint" id="agHint">10</span></div>
+          <div class="range-row">
+            <input type="range" id="agents" min="1" max="500" value="10" step="1" list="steplist"
+              oninput="document.getElementById('agHint').textContent=this.value;document.getElementById('agVal').textContent=this.value;syncRatios();updateZASupport();calc()">
+            <span class="range-val" id="agVal">10</span>
+            <datalist id="steplist">
+              <option value="25"></option><option value="50"></option><option value="100"></option>
+              <option value="150"></option><option value="200"></option><option value="300"></option><option value="500"></option>
+            </datalist>
+          </div>
+        </div>
+        <div class="fg">
+          <div class="fg-label">Contract Duration</div>
+          <div class="tg">
+            <label><input type="radio" name="contract" value="12" checked onchange="updateZASupport();calc()"><span>1Y</span></label>
+            <label><input type="radio" name="contract" value="24" onchange="updateZASupport();calc()"><span>2Y</span></label>
+            <label><input type="radio" name="contract" value="36" onchange="updateZASupport();calc()"><span>3Y</span></label>
+            <label><input type="radio" name="contract" value="60" onchange="updateZASupport();calc()"><span>5Y</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" id="tab-support" onclick="showTab('support',this)">Support Roles</div>
+        <div class="tab" id="tab-seat" onclick="showTab('seat',this)">Seat &amp; IT</div>
+        <div class="tab" id="tab-misc" onclick="showTab('misc',this)">Misc</div>
+        <div class="tab" id="tab-gm" onclick="showTab('gm',this)">GM%</div>
+      </div>
+
+      <div class="tc active" id="tc-support">
+        <p style="font-size:11px;color:var(--k-muted);margin-bottom:14px">Salaries are pre-loaded per location. Ratio auto-calculates headcount. Override in Count if needed.</p>
+        <div style="overflow-x:auto">
+          <table class="rt">
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Base<br><span id="rolesLocLabel" style="font-size:8px;font-weight:400">local/mo</span></th>
+                <th>Fringe</th>
+                <th>Total<br><span style="font-size:8px;font-weight:400">local/mo</span></th>
+                <th>Ratio<br><span style="font-size:8px;font-weight:400">1:N</span></th>
+                <th>Auto HC</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody id="rolesBody"></tbody>
+            <tfoot>
+              <tr>
+                <td>TOTAL SUPPORT</td>
+                <td></td><td></td><td></td><td></td>
+                <td id="totalAutoHC">—</td>
+                <td id="totalCountHC">—</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="tc" id="tc-seat">
+        <div class="sec-hdr">Seat Costs — per head / month</div>
+        <div class="seat-grid" id="seatGrid"></div>
+
+        <div id="silotechRow" style="display:none;margin-top:14px">
+          <div class="sec-hdr">US Only — Silotech</div>
+          <div style="background:var(--k-sky);border:1.5px solid var(--k-blue);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:12px">
+            <span style="font-weight:600;color:var(--k-text)">🔧 Silotech Costs</span>
+            <span style="font-weight:700;color:var(--k-blue);font-family:'JetBrains Mono',monospace" id="silotechAmt">—</span>
+          </div>
+        </div>
+
+        <div class="sec-hdr" style="margin-top:16px">IT Hardware — per head / month</div>
+        <div class="it-grid">
+          <div class="it-item" onclick="toggleIT(this,'pc')">
+            <input type="checkbox" data-key="pc" style="display:none">
+            <div class="it-check">✓</div>
+            <div class="it-body"><div class="it-name">🖥️ PC</div><div class="it-price">$40 / head</div></div>
+          </div>
+          <div class="it-item" onclick="toggleIT(this,'monitor')">
+            <input type="checkbox" data-key="monitor" style="display:none">
+            <div class="it-check">✓</div>
+            <div class="it-body"><div class="it-name">🖥️ 2nd Monitor</div><div class="it-price">$4.50 / head</div></div>
+          </div>
+          <div class="it-item" onclick="toggleIT(this,'headset')">
+            <input type="checkbox" data-key="headset" style="display:none">
+            <div class="it-check">✓</div>
+            <div class="it-body"><div class="it-name">🎧 Headset</div><div class="it-price">$1.25 / head</div></div>
+          </div>
+          <div class="it-item" onclick="toggleIT(this,'uniphore')">
+            <input type="checkbox" data-key="uniphore" style="display:none">
+            <div class="it-check">✓</div>
+            <div class="it-body"><div class="it-name">🤖 Uniphore</div><div class="it-price">$42 / head</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tc" id="tc-misc">
+        <p style="font-size:11px;color:var(--k-muted);margin-bottom:14px">One-time costs spread across contract term. Hiring costs shown for India only.</p>
+        <div class="fg"><div class="fg-label">Travel Cost (total USD)</div><input type="number" id="mTravel" min="0" placeholder="0" oninput="calc()"></div>
+        <div class="fg"><div class="fg-label">Compliance Costs (total USD)</div><input type="number" id="mCompliance" min="0" placeholder="0" oninput="calc()"></div>
+        <div class="fg"><div class="fg-label">Implementation Charges (total USD)</div><input type="number" id="mImpl" min="0" placeholder="0" oninput="calc()"></div>
+        
+        <div id="hiringRow" style="display:none;margin-top:14px">
+          <div class="sec-hdr">India Only — Hiring Costs</div>
+          <p style="font-size:11px;color:var(--k-muted);margin-bottom:8px">1 month base wage (excl. fringe) per head, amortised over contract term.</p>
+          <div style="background:var(--k-sky);border:1.5px solid var(--k-blue);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:12px">
+            <span style="font-weight:600;color:var(--k-text)">👥 Hiring Cost (amortised/mo)</span>
+            <span style="font-weight:700;color:var(--k-blue);font-family:'JetBrains Mono',monospace" id="hiringAmt">—</span>
+          </div>
+        </div>
+
+        <div class="fg" id="zaSupportStaffRow" style="display:none;margin-top:14px">
+          <div class="sec-hdr">South Africa Only — Support Staff</div>
+          <div class="fg-label">Support Staff Costs (total USD)</div>
+          <input type="number" id="mSupportStaff" min="0" placeholder="0" oninput="zaSupportDirty=true;calc()">
+        </div>
+      </div>
+
+      <div class="tc" id="tc-gm">
+        <p style="font-size:11px;color:var(--k-muted);margin-bottom:14px">Formula: <strong style="color:var(--k-text)">Monthly Client TCO = Total Cost ÷ (1 − GM%)</strong></p>
+        <div class="fg">
+          <div class="gm-label-row">GM% &nbsp;<strong>(EBIT + SG&amp;A)</strong></div>
+          <input type="number" id="gmPct" min="0" max="99.9" step="0.1" placeholder="e.g. 25" oninput="calc()">
+        </div>
+        <div class="gm-breakdown" id="gmBox">
+          <div class="gm-row"><span>Total cost without GM%</span><span class="gv" id="gmBase">—</span></div>
+          <div class="gm-row"><span>GM amount</span><span class="gv" id="gmAmt">—</span></div>
+          <div class="gm-row"><span>Monthly Client TCO</span><span class="gv" id="gmPrice">—</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="summary">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Cost Summary</div>
+
+      <div class="row"><span>Location / Tier</span><span class="v" id="sLoc">US · T1</span></div>
+      <div class="row"><span>Pricing Model</span><span class="v" id="sPricing">—</span></div>
+      <div class="row"><span>Headcount</span><span class="v" id="sAgents">—</span></div>
+      <div class="row"><span>Contract</span><span class="v" id="sContract">—</span></div>
+
+      <div class="sep"></div>
+
+      <div class="row hi"><span>Agent wages (incl. fringe)</span><span class="v" id="sWage">—</span></div>
+      <div class="row"><span>Support roles</span><span class="v" id="sRoles">—</span></div>
+      <div class="row"><span>Seat costs</span><span class="v" id="sSeat">—</span></div>
+      <div class="row"><span>IT costs</span><span class="v" id="sIT">—</span></div>
+      <div class="row"><span>Misc (amortised)</span><span class="v" id="sMisc">—</span></div>
+
+      <div class="sep"></div>
+
+      <div class="row"><span>Total cost without GM%</span><span class="v" id="sSub">—</span></div>
+      <div class="row hi"><span>GM add-on</span><span class="v" id="sGM">—</span></div>
+      <div class="row" style="border-bottom:none">
+        <span>Contribution Margin <span class="cm-note" id="cmNote"></span></span>
+        <span class="v" id="sCM">—</span>
+      </div>
+
+      <div class="alert" id="cmAlert"></div>
+
+      <div class="tco-box">
+        <div class="tco-label">Monthly Client TCO</div>
+        <div class="tco-amount" id="tTotal">—</div>
+        <div class="tco-sub" id="tSub">no GM applied</div>
+      </div>
+
+      <button class="btn-primary" onclick="genQuote()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke="white" stroke-width="1.5"/><line x1="4.5" y1="5" x2="9.5" y2="5" stroke="white" stroke-width="1.2"/><line x1="4.5" y1="7.5" x2="9.5" y2="7.5" stroke="white" stroke-width="1.2"/><line x1="4.5" y1="10" x2="7.5" y2="10" stroke="white" stroke-width="1.2"/></svg>
+        Generate Quote
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Per-Agent Breakdown</div>
+      <div class="metric-grid">
+        <div class="metric"><div class="m-label">Agent wage</div><div class="m-val" id="paW">—</div></div>
+        <div class="metric"><div class="m-label">Support roles</div><div class="m-val" id="paR">—</div></div>
+        <div class="metric"><div class="m-label">Seat cost</div><div class="m-val" id="paS">—</div></div>
+        <div class="metric"><div class="m-label">IT cost</div><div class="m-val" id="paIT">—</div></div>
+        <div class="metric" style="grid-column:1/-1"><div class="m-label">Misc / Silotech / Hiring</div><div class="m-val" id="paM">—</div></div>
+        <div class="metric hi" style="grid-column:1/-1"><div class="m-label">Price per FTE / mo</div><div class="m-val" id="paFTE">—</div></div>
+      </div>
+      <div class="model-result">
+        <span class="mr-label" id="breakdownLabel">Price per FTE</span>
+        <span class="mr-val" id="paT">—</span>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="qModal">
+  <div class="mi">
+    <button class="cbtn" onclick="document.getElementById('qModal').style.display='none'">✕</button>
+    <div class="mi-header">
+      <h2>Quote Summary</h2>
+      <span class="badge">Indicative</span>
+    </div>
+    <div class="mi-sub">Not a final invoice — for discussion purposes only</div>
+    <div id="qContent"></div>
+    <div class="mi-actions">
+      <button class="btn-copy" onclick="copyQ()">📋 Copy to Clipboard</button>
+      <button class="btn-done" onclick="document.getElementById('qModal').style.display='none'">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Constants ──────────────────────────────────────────────────────────────────
+
+const FX = { USD:1, GBP:1.27, ZAR:0.055, PHP:0.017, INR:0.012 };
+
+const CURRENCY_MAP = {
+  USD: { symbol:'$',  rate:1.00 },
+  EUR: { symbol:'€',  rate:0.92 },
+  GBP: { symbol:'£',  rate:0.79 },
+};
+
+const AGENT_RATES = {
+  US: { type:'hourly',  t1:17.00, currency:'USD', symbol:'$' },
+  UK: { type:'hourly',  t1:13.00, currency:'GBP', symbol:'£' },
+  ZA: { type:'monthly', t1:7300,  currency:'ZAR', symbol:'R' },
+  PH: { type:'monthly', t1:21000, currency:'PHP', symbol:'₱' },
+  IN: { type:'monthly', t1:42000, currency:'INR', symbol:'₹' },
+};
+
+function getHrs(loc){ return loc === 'UK' ? 147 : 173.2; }
+
+const ATT_HRS   = { US:153, UK:137, ZA:195, PH:143, IN:148 };
+const AVAIL_PCT = 0.93;
+const OCC_PCT   = 0.85;
+
+const SEAT = {
+  US:{ amount:300,   currency:'USD', disp:'$300' },
+  UK:{ amount:0,     currency:'GBP', disp:'£0' },
+  ZA:{ amount:10150, currency:'ZAR', disp:'R10,150' },
+  PH:{ amount:17000, currency:'PHP', disp:'₱17,000' },
+  IN:{ amount:12000, currency:'INR', disp:'₹12,000' },
+};
+
+const COUNTRIES = ['US','UK','ZA','PH','IN'];
+const COL_CCY   = { US:'USD', UK:'GBP', ZA:'ZAR', PH:'PHP', IN:'INR' };
+const ROLES     = ['TL','QA','Trainer','Ops Manager','WFM Specialist','SDM'];
+const IT_SEL    = { pc:false, monitor:false, headset:false, uniphore:false };
+const IT_USD    = { pc:40, monitor:4.5, headset:1.25, uniphore:42 };
+
+const ROLE_SALARIES = {
+  TL:             { US:23,  UK:15.44, ZA:15750, PH:32000,  IN:62500  },
+  QA:             { US:22,  UK:14.95, ZA:7350,  PH:28000,  IN:54500  },
+  Trainer:        { US:23,  UK:17.35, ZA:15750, PH:32000,  IN:62500  },
+  Ops_Manager:    { US:37,  UK:22.63, ZA:42000, PH:120000, IN:145000 },
+  WFM_Specialist: { US:10,  UK:15.44, ZA:15750, PH:80000,  IN:54000  },
+  SDM:            { US:50,  UK:25.10, ZA:78750, PH:180000, IN:185000 },
+};
+
+const DEFAULT_RATIOS = { TL:15, QA:30, Trainer:50, Ops_Manager:100, WFM_Specialist:150, SDM:300 };
+const ROLE_TYPE = { US:'hourly', UK:'hourly', ZA:'monthly', PH:'monthly', IN:'monthly' };
+const FRINGE    = { US:0.30, UK:0.36, ZA:0.56, PH:0.55, IN:0.55 };
+const CLABELS   = { '12':'1 Year','24':'2 Years','36':'3 Years','60':'5 Years' };
+const LOC_NAMES = { US:'United States', UK:'United Kingdom', ZA:'South Africa', PH:'Philippines', IN:'India' };
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function getFringe(loc, isAgent = true) {
+  if (loc === 'IN') {
+    const model = document.querySelector('input[name="model"]:checked').value;
+    if (model === 'waha') return 0.20;
+    return isAgent ? 0.50 : 0.40;
+  }
+  return FRINGE[loc] || 0;
+}
+
+function toUSD(a, ccy){ return a * (FX[ccy] || 1); }
+
+function fmtD(n, dp = 0){
+  const cfg = CURRENCY_MAP[document.getElementById('displayCurrency').value];
+  const val = n * cfg.rate;
+  if(dp === 0) return cfg.symbol + Math.round(val).toLocaleString();
+  return cfg.symbol + val.toFixed(dp);
+}
+
+function getAgentBaseMonthlyUSD(loc, tier){
+  const r = AGENT_RATES[loc], mult = tier === '2' ? 1.2 : 1.0;
+  if(r.type === 'hourly') return toUSD(r.t1 * mult * getHrs(loc), r.currency);
+  return toUSD(r.t1 * mult, r.currency);
+}
+function getAgentUSD(loc, tier){ return getAgentBaseMonthlyUSD(loc, tier) * (1 + getFringe(loc, true)); }
+
+function getRoleBaseMonthlyUSD(sr, loc){
+  const base = (ROLE_SALARIES[sr]||{})[loc] || 0;
+  if(ROLE_TYPE[loc] === 'hourly') return toUSD(base * getHrs(loc), COL_CCY[loc]);
+  return toUSD(base, COL_CCY[loc]);
+}
+function getRoleMonthlyUSD(sr, loc){ return getRoleBaseMonthlyUSD(sr, loc) * (1 + getFringe(loc, false)); }
+
+// ── Build UI ───────────────────────────────────────────────────────────────────
+
+function buildRoles(){
+  const tb = document.getElementById('rolesBody');
+  tb.innerHTML = '';
+  ROLES.forEach(role => {
+    const sr    = role.replace(/\s+/g,'_');
+    const ratio = DEFAULT_RATIOS[sr] || '';
+    const tr    = document.createElement('tr');
+    tr.innerHTML =
+      `<td>${role}</td>` +
+      `<td id="rsal_${sr}">—</td>` +
+      `<td id="rfng_${sr}">—</td>` +
+      `<td id="rtot_${sr}">—</td>` +
+      `<td><input type="number" min="1" placeholder="—" value="${ratio}" id="rr_${sr}" oninput="updateAutoHC('${sr}')"></td>` +
+      `<td><span id="rah_${sr}" style="font-size:11px;font-weight:600;color:var(--k-blue);font-family:'JetBrains Mono',monospace">—</span></td>` +
+      `<td><input type="number" min="0" max="999" step="0.01" value="0" id="rc_${sr}" oninput="calc()"></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function refreshRolesTable(){
+  const loc    = document.getElementById('location').value;
+  const symMap = { USD:'$', GBP:'£', ZAR:'R', PHP:'₱', INR:'₹' };
+  const sym    = symMap[COL_CCY[loc]] || '';
+  document.getElementById('rolesLocLabel').textContent = ROLE_TYPE[loc] === 'hourly' ? `${COL_CCY[loc]}/hr` : `${COL_CCY[loc]}/mo`;
+  const fringePct = getFringe(loc, false);
+  ROLES.forEach(role => {
+    const sr         = role.replace(/\s+/g,'_');
+    const base       = (ROLE_SALARIES[sr]||{})[loc] || 0;
+    const monthly    = ROLE_TYPE[loc] === 'hourly' ? base * getHrs(loc) : base;
+    const totalLocal = monthly * (1 + fringePct);
+    document.getElementById(`rsal_${sr}`).textContent = `${sym}${base.toLocaleString()}`;
+    document.getElementById(`rfng_${sr}`).textContent = `${(fringePct*100).toFixed(0)}%`;
+    document.getElementById(`rtot_${sr}`).textContent = `${sym}${Math.round(totalLocal).toLocaleString()}`;
+  });
+}
+
+function buildSeat(){
+  const g = document.getElementById('seatGrid');
+  g.innerHTML = COUNTRIES.map(c =>
+    `<div class="seat-item"><span class="s-loc">${LOC_NAMES[c]}</span><span class="s-val">${SEAT[c].disp}</span></div>`
+  ).join('');
+}
+
+function syncRatios(){
+  const agents = parseInt(document.getElementById('agents').value) || 1;
+  ROLES.forEach(role => {
+    const sr    = role.replace(/\s+/g,'_');
+    const ratio = parseFloat(document.getElementById(`rr_${sr}`)?.value) || 0;
+    if(ratio > 0){
+      const hc = (agents/ratio).toFixed(2);
+      document.getElementById(`rah_${sr}`).textContent = hc;
+      document.getElementById(`rc_${sr}`).value = hc;
+    } else {
+      document.getElementById(`rah_${sr}`).textContent = '—';
+    }
+  });
+}
+
+function updateAutoHC(sr){
+  const agents = parseInt(document.getElementById('agents').value) || 1;
+  const ratio  = parseFloat(document.getElementById(`rr_${sr}`)?.value) || 0;
+  if(ratio > 0){
+    const hc = (agents/ratio).toFixed(2);
+    document.getElementById(`rah_${sr}`).textContent = hc;
+    document.getElementById(`rc_${sr}`).value = hc;
+  } else {
+    document.getElementById(`rah_${sr}`).textContent = '—';
+  }
+  calc();
+}
+
+function updatePricingNote(){
+  const loc   = document.getElementById('location').value;
+  const hrs   = ATT_HRS[loc];
+  const model = document.getElementById('pricingModel').value;
+  const prod  = (hrs*AVAIL_PCT).toFixed(1);
+  const trans = (hrs*AVAIL_PCT*OCC_PCT).toFixed(1);
+  const notes = {
+    fte:         `TCO ÷ agents = price per FTE/mo`,
+    attendance:  `FTE ÷ ${hrs} att. hrs/mo`,
+    productive:  `FTE ÷ ${prod} prod. hrs/mo (×${(AVAIL_PCT*100).toFixed(0)}% avail)`,
+    transaction: `FTE ÷ ${trans} trans. hrs/mo (×${(OCC_PCT*100).toFixed(0)}% occ)`,
+    minute:      `Transaction hour ÷ 60`,
+  };
+  document.getElementById('pricingNote').textContent = '⚙ ' + (notes[model]||'');
+}
+
+function showTab(id, el){
+  document.querySelectorAll('.tc').forEach(e  => e.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
+  document.getElementById('tc-' + id).classList.add('active');
+  el.classList.add('active');
+}
+
+function toggleIT(el, key){
+  IT_SEL[key] = !IT_SEL[key];
+  el.classList.toggle('active', IT_SEL[key]);
+  calc();
+}
+
+let zaSupportDirty = false;
+function updateZASupport() {
+  const loc = document.getElementById('location').value;
+  if (loc === 'ZA' && !zaSupportDirty) {
+    const a = parseInt(document.getElementById('agents').value) || 1;
+    const m = parseInt(document.querySelector('input[name="contract"]:checked').value) || 12;
+    document.getElementById('mSupportStaff').value = a * m * 80;
+  }
+}
+
+function onLocChange(){
+  const loc  = document.getElementById('location').value;
+  const tier = document.querySelector('input[name="tier"]:checked').value;
+  const r    = AGENT_RATES[loc];
+  const mult = tier === '2' ? 1.2 : 1.0;
+  document.getElementById('rateNote').textContent = r.type === 'hourly'
+    ? `Tier ${tier} — ${r.symbol}${(r.t1*mult).toFixed(2)}/hr · ${loc}`
+    : `Tier ${tier} — ${r.symbol}${Math.round(r.t1*mult).toLocaleString()}/mo · ${loc}`;
+
+  const locCcyMap = { US:'USD', UK:'GBP', ZA:'GBP', PH:'USD', IN:'USD' };
+  document.getElementById('displayCurrency').value = locCcyMap[loc];
+
+  const DEFAULT_GM = { US:23, UK:25, ZA:26, PH:35, IN:15 };
+  document.getElementById('gmPct').value = DEFAULT_GM[loc];
+
+  document.getElementById('mTravel').value = loc === 'PH' ? '50000' : '';
+
+  if (loc === 'ZA') {
+    zaSupportDirty = false;
+    updateZASupport();
+  } else {
+    document.getElementById('mSupportStaff').value = '';
+  }
+
+  const autoIT = ['US','IN','PH'].includes(loc);
+  IT_SEL.pc = autoIT; IT_SEL.monitor = autoIT; IT_SEL.headset = autoIT; IT_SEL.uniphore = false;
+  ['pc','monitor','headset','uniphore'].forEach(k => {
+    document.querySelector(`.it-item [data-key="${k}"]`).closest('.it-item').classList.toggle('active', IT_SEL[k]);
+  });
+
+  refreshRolesTable();
+  updatePricingNote();
+  syncRatios();
+  calc();
+}
+
+// ── Main calculation ───────────────────────────────────────────────────────────
+
+function calc(){
+  const loc    = document.getElementById('location').value;
+  const tier   = document.querySelector('input[name="tier"]:checked').value;
+  const agents = parseInt(document.getElementById('agents').value) || 1;
+  const months = parseInt(document.querySelector('input[name="contract"]:checked').value);
+  const gm     = parseFloat(document.getElementById('gmPct').value) || 0;
+  const model  = document.querySelector('input[name="model"]:checked').value;
+  const pModel = document.getElementById('pricingModel').value;
+
+  document.getElementById('silotechRow').style.display = loc === 'US' ? 'block' : 'none';
+  document.getElementById('hiringRow').style.display   = loc === 'IN' ? 'block' : 'none';
+  document.getElementById('zaSupportStaffRow').style.display = loc === 'ZA' ? 'block' : 'none';
+
+  let totalRoles = 0, totalSupportHC = 0, totalAutoHC = 0, totalCountHC = 0;
+  ROLES.forEach(role => {
+    const sr         = role.replace(/\s+/g,'_');
+    const autoText   = document.getElementById(`rah_${sr}`).textContent;
+    const autoHC     = autoText === '—' ? 0 : (parseFloat(autoText)||0);
+    const overrideHC = parseFloat(document.getElementById(`rc_${sr}`).value) || 0;
+    totalAutoHC   += autoHC;
+    totalCountHC  += overrideHC;
+    totalRoles    += getRoleMonthlyUSD(sr, loc) * overrideHC;
+    totalSupportHC += overrideHC;
+  });
+  document.getElementById('totalAutoHC').textContent  = totalAutoHC  > 0 ? totalAutoHC.toFixed(2)  : '—';
+  document.getElementById('totalCountHC').textContent = totalCountHC > 0 ? totalCountHC.toFixed(2) : '—';
+
+  const totalHC   = agents + totalSupportHC;
+  const agWageUSD = getAgentUSD(loc, tier);
+  const totalWage = agWageUSD * agents;
+  const s         = SEAT[loc];
+  const totalSeat = toUSD((model === 'waha' && loc !== 'ZA') ? 0 : s.amount, s.currency) * totalHC;
+
+  let totalIT = 0;
+  Object.entries(IT_SEL).forEach(([k,v]) => { if(v) totalIT += IT_USD[k] * totalHC; });
+
+  const miscMo = months > 0
+    ? ((parseFloat(document.getElementById('mTravel').value)||0) +
+       (parseFloat(document.getElementById('mCompliance').value)||0) +
+       (parseFloat(document.getElementById('mImpl').value)||0) +
+       (parseFloat(document.getElementById('mSupportStaff').value)||0)) / months : 0;
+
+  let silotechMo = 0;
+  if(loc === 'US'){
+    silotechMo = 126 * totalHC;
+    document.getElementById('silotechAmt').textContent = fmtD(silotechMo) + ' / mo';
+  }
+
+  let hiringMo = 0;
+  if(loc === 'IN' && months > 0){
+    const agHiring = getAgentBaseMonthlyUSD('IN', tier) * agents;
+    const roleHiring = ROLES.reduce((acc, role) => {
+      const sr = role.replace(/\s+/g,'_');
+      return acc + getRoleBaseMonthlyUSD(sr,'IN') * (parseFloat(document.getElementById(`rc_${sr}`).value)||0);
+    }, 0);
+    hiringMo = (agHiring + roleHiring) / months;
+    document.getElementById('hiringAmt').textContent = fmtD(hiringMo) + ' / mo';
+  }
+
+  const subtotal    = totalWage + totalRoles + totalSeat + totalIT + miscMo + silotechMo + hiringMo;
+  const total       = gm < 100 ? subtotal / (1 - gm/100) : subtotal;
+  const gmAmt       = total - subtotal;
+  const cmPct       = total > 0 ? ((total - totalWage - totalRoles) / total) * 100 : 0;
+  const pricePerFTE = agents > 0 ? total / agents : 0;
+
+  // CM alerts
+  const cmNote  = document.getElementById('cmNote');
+  const alertEl = document.getElementById('cmAlert');
+  alertEl.style.display = 'none';
+  document.getElementById('sCM').style.color = 'var(--k-blue)';
+  if(loc === 'UK')      cmNote.textContent = '(min. 20%)';
+  else if(loc === 'PH') cmNote.textContent = '(min. 50%)';
+  else                  cmNote.textContent = '';
+
+  if(loc === 'UK' && cmPct < 20 && total > 0){
+    document.getElementById('sCM').style.color = 'var(--k-danger)';
+    alertEl.textContent = '⚠ Increase GM% — CM must be at least 20% for UK';
+    alertEl.style.display = 'block';
+  } else if(loc === 'PH' && cmPct < 50 && total > 0){
+    document.getElementById('sCM').style.color = 'var(--k-danger)';
+    alertEl.textContent = '⚠ Increase GM% — CM must be at least 50% for Philippines';
+    alertEl.style.display = 'block';
+  }
+
+  // Pricing model
+  const att   = ATT_HRS[loc];
+  const prod  = att * AVAIL_PCT;
+  const trans = att * AVAIL_PCT * OCC_PCT;
+  let modelPrice = 0, modelUnit = '/ FTE / mo', modelDp = 0;
+  switch(pModel){
+    case 'fte':         modelPrice = pricePerFTE;           modelUnit = '/ FTE / mo';       modelDp = 0; break;
+    case 'attendance':  modelPrice = pricePerFTE / att;     modelUnit = '/ att. hr';        modelDp = 2; break;
+    case 'productive':  modelPrice = pricePerFTE / prod;    modelUnit = '/ prod. hr';       modelDp = 2; break;
+    case 'transaction': modelPrice = pricePerFTE / trans;   modelUnit = '/ trans. hr';      modelDp = 2; break;
+    case 'minute':      modelPrice = (pricePerFTE/trans)/60;modelUnit = '/ min';            modelDp = 4; break;
+  }
+
+  const pmEl    = document.getElementById('pricingModel');
+  const pmLabel = pmEl.options[pmEl.selectedIndex].text;
+
+  // Update DOM
+  document.getElementById('sPricing').textContent  = pmLabel;
+  document.getElementById('sLoc').textContent      = `${loc} · T${tier}`;
+  document.getElementById('sAgents').textContent   = `${agents} + ${totalSupportHC.toFixed(2)} support`;
+  document.getElementById('sContract').textContent = CLABELS[months] || `${months}mo`;
+  document.getElementById('sWage').textContent     = fmtD(totalWage);
+  document.getElementById('sRoles').textContent    = fmtD(totalRoles);
+  document.getElementById('sSeat').textContent     = fmtD(totalSeat);
+  document.getElementById('sIT').textContent       = fmtD(totalIT);
+  document.getElementById('sMisc').textContent     = fmtD(miscMo + silotechMo + hiringMo);
+  document.getElementById('sSub').textContent      = fmtD(subtotal);
+  document.getElementById('sGM').textContent       = gm > 0 ? fmtD(gmAmt) : '—';
+  document.getElementById('sCM').textContent       = total > 0 ? `${cmPct.toFixed(1)}%` : '—';
+  document.getElementById('tTotal').textContent    = fmtD(total);
+  document.getElementById('tSub').textContent      = gm > 0 ? `Cost ÷ (1 − ${gm}%)` : 'no GM applied';
+
+  document.getElementById('paW').textContent   = fmtD(agWageUSD);
+  document.getElementById('paR').textContent   = fmtD(totalSupportHC > 0 ? totalRoles/agents : 0);
+  document.getElementById('paS').textContent   = fmtD(totalSeat/agents);
+  document.getElementById('paIT').textContent  = fmtD(totalIT/agents);
+  document.getElementById('paM').textContent   = fmtD((miscMo+silotechMo+hiringMo)/agents);
+  document.getElementById('paFTE').textContent = fmtD(pricePerFTE);
+  document.getElementById('breakdownLabel').textContent = pmLabel;
+  document.getElementById('paT').textContent   = `${fmtD(modelPrice, modelDp)} ${modelUnit}`;
+
+  // Hero TCO + ITY + TCV
+  document.getElementById('heroTCO').textContent = fmtD(total);
+
+  // ITY: Monthly TCO × remaining months in calendar year (13 - startMonth)
+  const startMonth = parseInt(document.getElementById('startMonth').value) || 1;
+  const remainingMonths = 13 - startMonth; // June=6 → 13-6=7? No: Jan=12, Dec=1
+  // Remaining months including start month: Jan=12, Feb=11, ... Dec=1
+  const ityMonths = 13 - startMonth;
+  const ity = total * ityMonths;
+  document.getElementById('heroITY').textContent = fmtD(ity);
+  document.getElementById('heroITYUnit').textContent = `${ityMonths} month${ityMonths !== 1 ? 's' : ''} remaining in year`;
+
+  // TCV: Monthly TCO × contract months
+  const tcv = total * months;
+  document.getElementById('heroTCV').textContent = fmtD(tcv);
+  document.getElementById('heroTCVUnit').textContent = `over ${CLABELS[months] || months + ' mo'}`;
+
+  if(gm > 0){
+    document.getElementById('gmBox').style.display = 'block';
+    document.getElementById('gmBase').textContent  = fmtD(subtotal);
+    document.getElementById('gmAmt').textContent   = fmtD(gmAmt);
+    document.getElementById('gmPrice').textContent = fmtD(total);
+  } else {
+    document.getElementById('gmBox').style.display = 'none';
+  }
+}
+
+// ── Quote ──────────────────────────────────────────────────────────────────────
+
+function genQuote(){
+  const loc      = document.getElementById('location').value;
+  const tier     = document.querySelector('input[name="tier"]:checked').value;
+  const agents   = document.getElementById('agents').value;
+  const engModel = document.querySelector('input[name="model"]:checked').value.toUpperCase();
+  const months   = document.querySelector('input[name="contract"]:checked').value;
+  const gm       = document.getElementById('gmPct').value || '0';
+  const ccy      = document.getElementById('displayCurrency').value;
+  const pmEl     = document.getElementById('pricingModel');
+  const agFringe = getFringe(loc, true);
+  const itOn     = Object.entries(IT_SEL).filter(([,v])=>v).map(([k])=>k.toUpperCase()).join(', ')||'None';
+  const rolesOn  = ROLES
+    .filter(r => (parseFloat(document.getElementById(`rc_${r.replace(/\s+/g,'_')}`)?.value)||0) > 0)
+    .map(r => {
+      const sr    = r.replace(/\s+/g,'_');
+      const ratio = document.getElementById(`rr_${sr}`)?.value || '—';
+      const count = document.getElementById(`rc_${sr}`).value;
+      return `  ${r}: 1:${ratio} → ${count} HC @ $${Math.round(getRoleMonthlyUSD(sr,loc)).toLocaleString()}/mo`;
+    }).join('\n');
+
+  const lines = [
+    `ESM SF REVENUE & CM CALCULATOR — INDICATIVE`,
+    `──────────────────────────────────`,
+    `Location        : ${LOC_NAMES[loc]}`,
+    `Agent Tier      : Tier ${tier}`,
+    `Engagement      : ${engModel}`,
+    `Pricing Model   : ${pmEl.options[pmEl.selectedIndex].text}`,
+    `Display Currency: ${ccy}`,
+    `Agents          : ${agents}`,
+    `Headcount       : ${document.getElementById('sAgents').textContent}`,
+    `Contract        : ${CLABELS[months]}`,
+    `Start Month     : ${document.getElementById('startMonth').options[document.getElementById('startMonth').selectedIndex].text}`,
+    `──────────────────────────────────`,
+    `Agent Wages     : ${document.getElementById('sWage').textContent} / mo (${Math.round(agFringe*100)}% fringe incl.)`,
+    `Support Roles   : ${document.getElementById('sRoles').textContent} / mo`,
+    rolesOn || `  (none configured)`,
+    `Seat Costs      : ${document.getElementById('sSeat').textContent} / mo`,
+    `IT Costs        : ${document.getElementById('sIT').textContent} / mo  [${itOn}]`,
+    `Misc (amort.)   : ${document.getElementById('sMisc').textContent} / mo`,
+    `──────────────────────────────────`,
+    `Total Cost      : ${document.getElementById('sSub').textContent} / mo`,
+    `GM (${gm}%)       : ${document.getElementById('sGM').textContent}`,
+    `Contribution M. : ${document.getElementById('sCM').textContent}`,
+    `MONTHLY TCO     : ${document.getElementById('tTotal').textContent} / mo`,
+    `ITY Revenue     : ${document.getElementById('heroITY').textContent} (${document.getElementById('heroITYUnit').textContent})`,
+    `TCV             : ${document.getElementById('heroTCV').textContent} (${CLABELS[months]})`,
+    `──────────────────────────────────`,
+    `Price per FTE   : ${document.getElementById('paFTE').textContent}`,
+    `${pmEl.options[pmEl.selectedIndex].text.padEnd(16)}: ${document.getElementById('paT').textContent}`,
+    `──────────────────────────────────`,
+    `* Indicative only. FX rates approximate.`,
+    `* Final pricing subject to agreed SLA & scope.`,
+  ].join('\n');
+
+  document.getElementById('qContent').textContent = lines;
+  document.getElementById('qModal').style.display = 'flex';
+}
+
+function copyQ(){
+  navigator.clipboard.writeText(document.getElementById('qContent').textContent)
+    .then(() => alert('Copied to clipboard!'));
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+// Default Start Month to current calendar month
+document.getElementById('startMonth').value = new Date().getMonth() + 1;
+buildRoles();
+buildSeat();
+onLocChange();
+</script>
+</body>
+</html>
