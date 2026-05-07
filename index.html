@@ -3,1275 +3,2484 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ESM Salesforce Revenue & CM Calculator</title>
+<title>RFP Sizing Calculator — BPO Multi-Location</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  /* ── Konecta Brand Palette ─────────────────────────────────────────────────── */
-  :root {
-    --k-navy:    #06152B;   /* Konecta deep navy */
-    --k-blue:    #0057FF;   /* Konecta electric blue */
-    --k-blue2:   #0041CC;   /* darker blue hover */
-    --k-sky:     #E8F0FF;   /* light blue tint */
-    --k-white:   #FFFFFF;
-    --k-off:     #F4F6FB;   /* off-white page bg */
-    --k-card:    #FFFFFF;
-    --k-border:  #DDE3F0;
-    --k-muted:   #6B7899;
-    --k-text:    #0D1B3E;
-    --k-text2:   #3D4F72;
-    --k-success: #00B87C;
-    --k-danger:  #E53939;
-    --k-warn:    #F59E0B;
-    --k-accent:  #0057FF;
-    --radius:    10px;
-    --shadow:    0 1px 3px rgba(0,0,0,.07), 0 4px 12px rgba(0,0,0,.06);
-    --shadow-md: 0 4px 16px rgba(0,87,255,.12);
-  }
+:root{
+  /* Konecta Brand Palette — matched to Pricing & Revenue Estimator */
+  --k-navy:    #06152B;
+  --k-blue:    #0057FF;
+  --k-blue2:   #0041CC;
+  --k-sky:     #E8F0FF;
+  --k-white:   #FFFFFF;
+  --k-off:     #F4F6FB;
+  --k-card:    #FFFFFF;
+  --k-border:  #DDE3F0;
+  --k-muted:   #6B7899;
+  --k-text:    #0D1B3E;
+  --k-text2:   #3D4F72;
+  --k-success: #00B87C;
+  --k-danger:  #E53939;
+  --k-warn:    #F59E0B;
+  --k-accent:  #0057FF;
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  --page:var(--k-off); --white:var(--k-white); --panel:var(--k-sky);
+  --border:var(--k-border); --border2:#b0bcda;
+  --ink:var(--k-text); --ink2:var(--k-text2); --ink3:var(--k-muted); --ink4:#9ca3af;
+  --blue:var(--k-blue); --blue-l:var(--k-sky); --blue-b:#93b8ff;
+  --orange:#ea580c; --orange-l:#fff7ed; --orange-b:#fed7aa;
+  --teal:#0f766e; --teal-l:#f0fdfa; --teal-b:#99f6e4;
+  --violet:#0041CC; --violet-l:#E8F0FF; --violet-b:#93b8ff;
+  --sky:#0057FF; --sky-l:#E8F0FF; --sky-b:#93b8ff;
+  --green:var(--k-success); --amber:var(--k-warn); --red:var(--k-danger);
+  --phone-c:#0057FF; --chat-c:#0041CC; --email-c:#00B87C;
+  --c1:#0057FF;   --c1l:#E8F0FF;   --c1b:#93b8ff;
+  --c2:#ea580c;   --c2l:#fff7ed;   --c2b:#fed7aa;
+  --c3:#0f766e;   --c3l:#f0fdfa;   --c3b:#99f6e4;
+  --c4:#0041CC;   --c4l:#E8F0FF;   --c4b:#93b8ff;
+  --c5:#00B87C;   --c5l:#e6faf4;   --c5b:#6de8c2;
+  --erlang-c:#7c3aed; --erlang-l:#f5f3ff; --erlang-b:#c4b5fd; --erlang-m:#ede9fe;
+  --font:'Plus Jakarta Sans',sans-serif; --mono:'JetBrains Mono',monospace;
+  --sh: 0 1px 3px rgba(0,0,0,.07),0 4px 12px rgba(0,0,0,.06);
+  --shm:0 4px 16px rgba(0,87,255,.12);
+  --shl:0 8px 32px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:13px}
+body{font-family:var(--font);background:var(--page);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
 
-  body {
-    background: var(--k-off);
-    color: var(--k-text);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 13px;
-    min-height: 100vh;
-    padding-bottom: 80px;
-  }
+/* ── HEADER ─────────────────────────────────────────── */
+.header{height:var(--header-h);background:#1211E6;border-bottom:none;display:flex;align-items:center;padding:0 24px;gap:20px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-text{font-size:15px;font-weight:700;color:#ffffff;letter-spacing:-.2px}
+.logo-sub{font-size:11px;color:rgba(255,255,255,.55);font-weight:400;margin-top:1px}
+.h-sep{width:1px;height:28px;background:var(--border);flex-shrink:0}
+.hctrl{display:flex;align-items:center;gap:6px}
+.hctrl-label{font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:.3px;white-space:nowrap}
+.hselect{appearance:none;-webkit-appearance:none;background:var(--panel);border:1px solid var(--border);color:var(--ink);font-family:var(--font);font-size:12px;font-weight:500;padding:5px 28px 5px 10px;border-radius:7px;outline:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;transition:border-color .15s}
+.hselect:focus{border-color:var(--k-blue);box-shadow:0 0 0 3px rgba(0,87,255,.08)}
+.shrink-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:5px 12px;font-size:11px;color:rgba(255,255,255,.8)}
+.shrink-pill strong{color:#00e5ff;font-weight:700;font-family:var(--mono)}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:12px}
 
-  /* ── Top Nav Bar ─────────────────────────────────────────────────────────────*/
-  .topbar {
-    background: #1211E6; /* Matched exactly to the uploaded logo blue */
-    padding: 0 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 56px;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    box-shadow: 0 2px 12px rgba(0,0,0,.25);
-  }
-  .topbar-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .topbar-logo-img {
-    height: auto;
-    max-height: 28px;
-    display: block;
-  }
-  .topbar-name {
-    font-size: 15px;
-    font-weight: 700;
-    color: white;
-    letter-spacing: -0.3px;
-  }
-  .topbar-name span { color: var(--k-white); }
-  .topbar-badge {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,.45);
-    padding: 3px 8px;
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 20px;
-  }
+/* ── TAB BAR ─────────────────────────────────────────── */
+.tabbar{height:var(--tabbar-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:stretch;padding:0 24px;position:sticky;top:var(--header-h);z-index:190}
+.tab-btn{display:flex;align-items:center;gap:8px;padding:0 18px;border:none;background:transparent;font-family:var(--font);font-size:12px;font-weight:600;color:var(--ink3);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab-btn:hover{color:var(--ink2)}
+.tab-btn.active{color:var(--k-blue);border-bottom-color:var(--k-blue)}
+.tab-btn.active.ph{color:var(--phone-c);border-bottom-color:var(--phone-c)}
+.tab-btn.active.ch{color:var(--chat-c);border-bottom-color:var(--chat-c)}
+.tab-btn.active.em{color:var(--email-c);border-bottom-color:var(--email-c)}
+.tab-btn.active.ec{color:var(--erlang-c);border-bottom-color:var(--erlang-c);background:var(--erlang-l)}
+.tab-btn.ec{color:var(--erlang-c);font-weight:700}
+.tab-btn.ec:hover{color:#6d28d9;background:var(--erlang-l)}
+.tab-btn.ec .tab-ec-label{background:var(--erlang-m);border:1.5px solid var(--erlang-b);color:var(--erlang-c);border-radius:6px;padding:2px 9px;font-weight:700;font-size:11px;letter-spacing:.1px;transition:background .15s}
+.tab-btn.ec:hover .tab-ec-label,.tab-btn.active.ec .tab-ec-label{background:#ddd6fe;border-color:var(--erlang-c)}
+.tab-pip{font-family:var(--mono);font-size:10px;font-weight:600;padding:1px 7px;border-radius:20px;background:var(--page);color:var(--ink3);transition:all .15s}
+.tab-btn.active.ph .tab-pip{background:#e0f2fe;color:var(--phone-c)}
+.tab-btn.active.ch .tab-pip{background:#ede9fe;color:var(--chat-c)}
+.tab-btn.active.em .tab-pip{background:#d1fae5;color:var(--email-c)}
+.tab-btn.active.ec .tab-pip{background:var(--erlang-m);color:var(--erlang-c)}
+.tabbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.vol-toggle{display:flex;background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:3px;gap:2px}
+.vt-btn{padding:4px 13px;border-radius:5px;border:none;background:transparent;font-family:var(--font);font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .15s}
+.vt-btn.active{background:var(--white);color:var(--ink);box-shadow:var(--sh)}
 
-  /* ── Page wrapper ────────────────────────────────────────────────────────────*/
-  .page { max-width: 1200px; margin: 0 auto; padding: 28px 24px 40px; }
+/* ── GLOBAL INPUT STRIP ──────────────────────────────── */
+.global-strip{
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  padding:14px 24px;
+  display:flex;
+  align-items:center;
+  gap:20px;
+  flex-wrap:wrap;
+}
+.gs-label{font-size:12px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.gs-fields{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.gs-field{display:flex;align-items:center;gap:8px}
+.gs-field label{font-size:11px;font-weight:600;color:var(--ink3);white-space:nowrap}
+.gs-input{
+  background:var(--panel);border:1.5px solid var(--border2);border-radius:8px;
+  font-family:var(--mono);font-size:16px;font-weight:700;color:var(--ink);
+  padding:8px 12px;outline:none;-moz-appearance:textfield;
+  width:140px;text-align:right;transition:border-color .15s,box-shadow .15s;
+}
+.gs-input::-webkit-outer-spin-button,.gs-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.gs-input:focus{border-color:var(--k-blue);box-shadow:0 0 0 3px rgba(0,87,255,.1)}
+.gs-unit{font-size:11px;font-weight:600;color:var(--ink4)}
+.gs-arrow{font-size:16px;color:var(--border2);flex-shrink:0}
+.gs-info{font-size:11px;color:var(--ink4);font-style:italic}
+.vol-period-sel{
+  appearance:none;-webkit-appearance:none;
+  background:var(--k-blue);
+  border:none;border-radius:6px;
+  color:#fff;font-family:var(--mono);font-size:11px;font-weight:700;
+  padding:5px 22px 5px 9px;outline:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 6px center;
+  transition:background .15s;
+}
+.vol-period-sel:hover{background-color:var(--k-blue2);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");}
 
-  /* ── Hero strip ──────────────────────────────────────────────────────────────*/
-  .hero {
-    background: linear-gradient(135deg, var(--k-navy) 0%, #0A2257 100%);
-    border-radius: 14px;
-    padding: 28px 32px;
-    margin-bottom: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute;
-    right: -40px; top: -60px;
-    width: 260px; height: 260px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(0,87,255,.3) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero-text h1 {
-    font-size: 22px;
-    font-weight: 800;
-    color: white;
-    letter-spacing: -0.5px;
-    line-height: 1.2;
-    margin-bottom: 6px;
-  }
-  .hero-text p {
-    font-size: 12px;
-    color: rgba(255,255,255,.55);
-    line-height: 1.55;
-    max-width: 520px;
-  }
-  .hero-text p strong { color: rgba(255,255,255,.75); font-weight: 600; }
-  .hero-stat {
-    text-align: center;
-    flex-shrink: 0;
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.1);
-    border-radius: 10px;
-    padding: 14px 22px;
-  }
-  .hero-stat .label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,.75); margin-bottom: 4px; font-weight: 600; }
-  .hero-stat .val { font-size: 22px; font-weight: 800; color: #00e5ff; font-family: 'JetBrains Mono', monospace; }
-  .hero-stat .unit { font-size: 10px; color: rgba(255,255,255,.6); margin-top: 2px; }
+/* Split % bar + disclaimer */
+.split-pct-strip{
+  background:#fffbeb;
+  border-bottom:1px solid #fde68a;
+  padding:12px 24px;
+  display:none;
+}
+.split-pct-strip.show{display:block}
+.sps-top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+.sps-label{font-size:11px;font-weight:600;color:#92400e}
+.sps-fields{display:flex;gap:10px;flex-wrap:wrap}
+.sps-loc{display:flex;align-items:center;gap:5px}
+.sps-loc-name{font-size:11px;font-weight:600;white-space:nowrap}
+.sps-loc-input{
+  width:58px;background:var(--white);border:1.5px solid var(--border2);
+  border-radius:6px;font-family:var(--mono);font-size:13px;font-weight:700;
+  color:var(--ink);padding:4px 6px;outline:none;-moz-appearance:textfield;
+  text-align:right;transition:border-color .15s;
+}
+.sps-loc-input::-webkit-outer-spin-button,.sps-loc-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.sps-pct-sym{font-size:11px;color:var(--ink4)}
+.sps-total{display:flex;align-items:center;gap:8px;margin-left:auto}
+.sps-total-label{font-size:11px;color:#92400e;font-weight:500}
+.sps-total-val{font-family:var(--mono);font-size:14px;font-weight:700}
+.sps-total-val.ok{color:var(--green)}
+.sps-total-val.warn{color:var(--red)}
+.sps-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden;display:flex;margin-top:0}
+.sps-bar-seg{height:100%;transition:width .3s}
+.sps-disclaimer{display:none;margin-top:8px;padding:8px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:11px;color:var(--red);font-weight:500;align-items:center;gap:6px}
+.sps-disclaimer.show{display:flex}
 
-  /* ── Layout grid ─────────────────────────────────────────────────────────────*/
-  .layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
-  @media(max-width:900px){ .layout { grid-template-columns: 1fr; } }
+/* ── CHANNEL VIEWS ───────────────────────────────────── */
+.ch-view{display:none;flex:1;flex-direction:column;min-height:0}
+.ch-view.active{display:flex}
+.summary-view{display:none;flex:1;overflow-y:auto;padding:24px}
+.summary-view.active{display:block}
+.cards-scroll{flex:1;overflow-y:auto;overflow-x:auto;padding:20px 24px;display:flex;gap:14px;align-items:flex-start}
 
-  /* ── Card / Panel ─────────────────────────────────────────────────────────────*/
-  .card {
-    background: var(--k-card);
-    border: 1px solid var(--k-border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 22px 24px;
-    margin-bottom: 16px;
-  }
-  .card:last-child { margin-bottom: 0; }
-  .card-title {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--k-muted);
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .card-title .dot {
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: var(--k-blue);
-    flex-shrink: 0;
-  }
+/* ── LOCATION CARD ───────────────────────────────────── */
+.loc-card{flex:1;min-width:200px;max-width:250px;background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh);display:flex;flex-direction:column;overflow:hidden;transition:box-shadow .2s}
+.loc-card:hover{box-shadow:var(--shm)}
+.loc-card.c1{border-top:3px solid var(--c1)}
+.loc-card.c2{border-top:3px solid var(--c2)}
+.loc-card.c3{border-top:3px solid var(--c3)}
+.loc-card.c4{border-top:3px solid var(--c4)}
+.loc-card.c5{border-top:3px solid var(--c5)}
 
-  /* ── Field groups ─────────────────────────────────────────────────────────────*/
-  .fg { margin-bottom: 16px; }
-  .fg:last-child { margin-bottom: 0; }
-  .fg-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--k-text2);
-    margin-bottom: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .fg-label .hint {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--k-blue);
-    font-family: 'JetBrains Mono', monospace;
-  }
+/* Card header */
+.card-head{padding:14px 16px 12px;border-bottom:1px solid var(--border);background:var(--panel)}
+.card-loc-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.card-flag{font-size:18px;line-height:1;flex-shrink:0}
+.card-name-input{border:none;background:transparent;font-family:var(--font);font-size:13px;font-weight:700;color:var(--ink);outline:none;width:100%;padding:0;min-width:0}
+.card-name-input:focus{text-decoration:underline;text-underline-offset:2px}
+.card-country-select{display:block;width:100%;border:none;background:transparent;font-family:var(--font);font-size:11px;color:var(--ink3);font-weight:500;outline:none;cursor:pointer;-webkit-appearance:none;padding:0;margin-bottom:3px}
+/* FTE badge row with pencil */
+.fte-badge-row{display:flex;align-items:center;gap:6px;margin-top:3px}
+.fte-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;font-family:var(--mono);padding:2px 8px;border-radius:20px;margin-top:0}
+.fte-badge-custom{outline:2px solid var(--k-blue);outline-offset:1px}
+.fte-edit-btn{background:none;border:none;cursor:pointer;font-size:11px;padding:2px 4px;border-radius:4px;color:var(--ink3);line-height:1;transition:background .12s}
+.fte-edit-btn:hover{background:var(--k-sky)}
 
-  input[type="number"], select {
-    width: 100%;
-    background: var(--k-off);
-    border: 1.5px solid var(--k-border);
-    border-radius: 8px;
-    color: var(--k-text);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 13px;
-    padding: 9px 12px;
-    outline: none;
-    transition: border-color .18s, box-shadow .18s;
-    -webkit-appearance: none;
-  }
-  input[type="number"]:focus, select:focus {
-    border-color: var(--k-blue);
-    box-shadow: 0 0 0 3px rgba(0,87,255,.1);
-    background: white;
-  }
-  select {
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7899' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-color: var(--k-off);
-    padding-right: 36px;
-  }
-  select option { background: white; }
+/* FTE inline editor */
+.fte-edit-wrap{display:flex;align-items:center;gap:5px;margin-top:6px;padding:6px 10px;background:var(--k-sky);border-radius:7px;border:1px solid var(--k-border)}
+.fte-edit-input{width:70px;background:var(--white);border:1.5px solid var(--k-blue);border-radius:6px;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);padding:4px 7px;outline:none;-moz-appearance:textfield;text-align:right}
+.fte-edit-input::-webkit-outer-spin-button,.fte-edit-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.fte-edit-unit{font-size:10px;color:var(--ink3);font-weight:600}
+.fte-reset-btn{background:none;border:1px solid var(--k-border);cursor:pointer;font-size:12px;padding:3px 6px;border-radius:5px;color:var(--ink3);line-height:1;transition:all .12s}
+.fte-reset-btn:hover{background:var(--white);color:var(--k-blue)}
 
-  /* ── Toggle group ─────────────────────────────────────────────────────────────*/
-  .tg {
-    display: flex;
-    background: var(--k-off);
-    border: 1.5px solid var(--k-border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .tg label { flex: 1; display: block; text-align: center; margin: 0; }
-  .tg input[type="radio"] { display: none; }
-  .tg label span {
-    display: block;
-    padding: 8px 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--k-muted);
-    transition: all .18s;
-  }
-  .tg input[type="radio"]:checked + span {
-    background: var(--k-blue);
-    color: white;
-  }
+/* Location active toggle (equal mode) */
+.loc-active-btn{margin-left:auto;flex-shrink:0;width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);background:var(--white);cursor:pointer;font-size:10px;font-weight:700;color:var(--ink4);display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
+.loc-active-btn.active{background:var(--k-blue);border-color:var(--k-blue);color:#fff}
+.c1 .fte-badge{background:var(--c1l);color:var(--c1);border:1px solid var(--c1b)}
+.c2 .fte-badge{background:var(--c2l);color:var(--c2);border:1px solid var(--c2b)}
+.c3 .fte-badge{background:var(--c3l);color:var(--c3);border:1px solid var(--c3b)}
+.c4 .fte-badge{background:var(--c4l);color:var(--c4);border:1px solid var(--c4b)}
+.c5 .fte-badge{background:var(--c5l);color:var(--c5);border:1px solid var(--c5b)}
+/* Volume display row inside card (read-only in equal mode) */
+.card-vol-display{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--white);display:flex;justify-content:space-between;align-items:center}
+.cvd-label{font-size:11px;color:var(--ink4);font-weight:500}
+.cvd-val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink3)}
 
-  /* ── Range ───────────────────────────────────────────────────────────────────*/
-  .range-row { display: flex; align-items: center; gap: 12px; }
-  input[type="range"] {
-    flex: 1; -webkit-appearance: none;
-    height: 4px; border-radius: 2px;
-    background: var(--k-border); outline: none; cursor: pointer;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
-    background: var(--k-blue); box-shadow: 0 0 0 3px rgba(0,87,255,.2);
-    cursor: pointer; transition: transform .15s;
-  }
-  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
-  .range-val { font-size: 14px; font-weight: 700; color: var(--k-blue); min-width: 42px; text-align: right; font-family: 'JetBrains Mono', monospace; }
+/* Field rows */
+.card-fields{flex:1}
+.field-row{display:flex;align-items:center;justify-content:space-between;padding:0 14px;min-height:48px;border-bottom:1px solid var(--border);gap:10px}
+.field-row:last-child{border-bottom:none}
+.field-label{font-size:11px;font-weight:500;color:var(--ink3);white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:3px}
+.field-right{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.field-input{width:90px;background:var(--panel);border:1.5px solid var(--border);border-radius:7px;font-family:var(--mono);font-size:14px;font-weight:600;color:var(--ink);padding:6px 9px;outline:none;-moz-appearance:textfield;text-align:right;transition:border-color .15s,box-shadow .15s}
+.field-input::-webkit-outer-spin-button,.field-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.loc-card.c1 .field-input:focus{border-color:var(--c1);box-shadow:0 0 0 3px rgba(0,87,255,.1)}
+.loc-card.c2 .field-input:focus{border-color:var(--c2);box-shadow:0 0 0 3px rgba(234,88,12,.1)}
+.loc-card.c3 .field-input:focus{border-color:var(--c3);box-shadow:0 0 0 3px rgba(15,118,110,.1)}
+.loc-card.c4 .field-input:focus{border-color:var(--c4);box-shadow:0 0 0 3px rgba(0,65,204,.1)}
+.loc-card.c5 .field-input:focus{border-color:var(--c5);box-shadow:0 0 0 3px rgba(0,184,124,.1)}
+.field-unit{font-size:10px;color:var(--ink4);font-weight:500;white-space:nowrap}
 
-  /* ── Rate note ───────────────────────────────────────────────────────────────*/
-  .rate-note {
-    font-size: 11px;
-    color: var(--k-muted);
-    margin-top: 7px;
-    padding: 6px 10px;
-    background: var(--k-sky);
-    border-radius: 6px;
-    border-left: 3px solid var(--k-blue);
-    font-family: 'JetBrains Mono', monospace;
-  }
+/* Shrinkage block */
+.shrink-block{padding:12px 14px;border-bottom:1px solid var(--border);background:var(--panel)}
+.shrink-block-title{font-size:10px;font-weight:700;color:var(--ink4);letter-spacing:.6px;text-transform:uppercase;margin-bottom:10px}
+.shrink-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.shrink-label{font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px}
+.shrink-label.util{color:#0057FF}
+.shrink-label.avail{color:#0041CC}
+.shrink-input-wrap{display:flex;align-items:center;gap:4px}
+.shrink-input{width:50px;background:var(--white);border:1.5px solid var(--border2);border-radius:6px;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);padding:4px 8px;outline:none;-moz-appearance:textfield;text-align:right;transition:border-color .15s,box-shadow .15s;cursor:text}
+.shrink-input::-webkit-outer-spin-button,.shrink-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.shrink-input:hover{border-color:var(--k-blue);background:#f0f5ff}
+.shrink-input:focus{border-color:var(--k-blue);box-shadow:0 0 0 3px rgba(0,87,255,.12);background:#fff}
+.shrink-pct{font-size:11px;color:var(--ink4);width:10px}
+.shrink-bar{height:5px;border-radius:3px;background:var(--border);overflow:hidden;position:relative;margin-bottom:7px}
+.shrink-bar-u{position:absolute;left:0;top:0;height:100%;background:#0057FF;border-radius:3px;transition:width .3s}
+.shrink-bar-a{position:absolute;top:0;height:100%;background:#0041CC;border-radius:0 3px 3px 0;transition:width .3s,left .3s}
+.shrink-total-row{display:flex;align-items:center;justify-content:space-between}
+.shrink-total-label{font-size:10px;font-weight:600;color:var(--ink3)}
+.shrink-total-val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)}
 
-  /* ── Tabs ─────────────────────────────────────────────────────────────────────*/
-  .tabs { display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 2px solid var(--k-border); padding-bottom: 0; }
-  .tab {
-    padding: 8px 14px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--k-muted);
-    border-radius: 6px 6px 0 0;
-    transition: all .18s;
-    user-select: none;
-    margin-bottom: -2px;
-    border-bottom: 2px solid transparent;
-  }
-  .tab:hover { color: var(--k-text); background: var(--k-sky); }
-  .tab.active { color: var(--k-blue); border-bottom-color: var(--k-blue); background: transparent; }
-  .tc { display: none; }
-  .tc.active { display: block; }
+/* Result block */
+.result-block{background:var(--white);border-top:2px solid var(--border);padding:16px}
+.result-step{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;margin-bottom:4px}
+.rs-label{color:var(--ink4);font-weight:500}
+.rs-val{font-family:var(--mono);font-weight:600;color:var(--ink3);font-size:11px}
+.result-divider{height:1px;background:var(--border);margin:10px 0 8px}
+.rp-label{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}
+.rp-fte{font-family:var(--mono);font-size:28px;font-weight:700;line-height:1}
+.loc-card.c1 .rp-fte{color:var(--c1)}
+.loc-card.c2 .rp-fte{color:var(--c2)}
+.loc-card.c3 .rp-fte{color:var(--c3)}
+.loc-card.c4 .rp-fte{color:var(--c4)}
+.loc-card.c5 .rp-fte{color:var(--c5)}
 
-  /* ── Section header ──────────────────────────────────────────────────────────*/
-  .sec-hdr {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--k-blue);
-    margin: 16px 0 8px;
-  }
+/* Tooltip */
+.tt{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:var(--border);color:var(--ink4);font-size:9px;font-weight:700;cursor:help;position:relative}
+.tt:hover::after{content:attr(data-t);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:10px;padding:6px 10px;border-radius:7px;white-space:pre-wrap;z-index:999;pointer-events:none;max-width:210px;line-height:1.5;font-family:var(--font);font-weight:400;box-shadow:var(--shl)}
 
-  /* ── Roles table ──────────────────────────────────────────────────────────────*/
-  .rt { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
-  .rt th {
-    text-align: center; color: var(--k-muted); padding: 8px 4px 6px;
-    font-size: 10px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase;
-    border-bottom: 2px solid var(--k-border);
-  }
-  .rt th:first-child { text-align: left; width: 115px; }
-  .rt td {
-    padding: 7px 4px; border-bottom: 1px solid #EEF1F8;
-    vertical-align: middle; text-align: center; color: var(--k-text2);
-  }
-  .rt td:first-child { text-align: left; font-weight: 600; color: var(--k-text); white-space: nowrap; }
-  .rt tbody tr:hover td { background: #F9FBFF; }
-  .rt input[type="number"] {
-    font-size: 12px; padding: 5px 6px; text-align: center;
-    width: 100%; max-width: 68px; font-family: 'JetBrains Mono', monospace;
-  }
-  .rt tfoot td { font-size: 11px; font-weight: 700; color: var(--k-blue); padding: 10px 4px 4px; }
-  .rt tfoot td:first-child { text-align: left; }
+/* Footer - Updated Styles */
+.footer{background:var(--k-navy);height:var(--footer-h);display:flex;align-items:stretch;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.footer-seg{display:flex;flex-direction:column;justify-content:center;padding:0 28px;border-right:1px solid rgba(255,255,255,.08)}
+.footer-seg:last-child{border-right:none}
+/* White color for Total FTE section labels and values */
+.fs-label{font-size:11px;font-weight:700;color:#fff;letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px}
+.fs-val{font-family:var(--mono);font-size:23px;font-weight:700;color:#fff;line-height:1}
+.fs-val.white{color:#fff} 
+.fs-sub{font-size:11px;color:#fff;font-weight:700;margin-top:2px}
+/* Other channel labels remain readable */
+.footer-ch{display:flex;gap:20px;align-items:center}
+.fch{display:flex;flex-direction:column;gap:1px}
+.fch-lbl{font-size:11px;color:#6b7280;font-weight:700}
+.fch-val{font-family:var(--mono);font-size:15px;font-weight:700;color:#e5e7eb}
 
-  /* ── IT items ────────────────────────────────────────────────────────────────*/
-  .it-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .it-item {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--k-off); border: 1.5px solid var(--k-border);
-    border-radius: 8px; padding: 9px 12px; cursor: pointer; transition: all .18s;
-  }
-  .it-item:hover { border-color: var(--k-blue); background: var(--k-sky); }
-  .it-item.active { border-color: var(--k-blue); background: var(--k-sky); }
-  .it-item input { display: none; }
-  .it-check {
-    width: 16px; height: 16px; border-radius: 4px;
-    border: 1.5px solid var(--k-border); display: flex;
-    align-items: center; justify-content: center;
-    font-size: 10px; flex-shrink: 0; transition: all .18s;
-    background: white;
-  }
-  .it-item.active .it-check { background: var(--k-blue); border-color: var(--k-blue); color: white; }
-  .it-body { flex: 1; }
-  .it-name { font-size: 12px; font-weight: 600; color: var(--k-text); }
-  .it-price { font-size: 10px; color: var(--k-muted); font-family: 'JetBrains Mono', monospace; }
+/* Summary */
+.sum-heading{font-size:20px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.sum-sub{font-size:12px;color:var(--ink3);margin-bottom:22px}
+.sum-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.sum-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;box-shadow:var(--sh)}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sum-card.c1::before{background:var(--c1)}.sum-card.c2::before{background:var(--c2)}.sum-card.c3::before{background:var(--c3)}.sum-card.c4::before{background:var(--c4)}.sum-card.c5::before{background:var(--c5)}
+.sc-country{font-size:11px;color:var(--ink3);margin-bottom:2px}
+.sc-name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:14px}
+.sc-total{font-family:var(--mono);font-size:36px;font-weight:700;line-height:1;margin-bottom:2px}
+.sum-card.c1 .sc-total{color:var(--c1)}.sum-card.c2 .sc-total{color:var(--c2)}.sum-card.c3 .sc-total{color:var(--c3)}.sum-card.c4 .sc-total{color:var(--c4)}.sum-card.c5 .sc-total{color:var(--c5)}
+.sc-total-lbl{font-size:10px;color:var(--ink3);font-weight:500;margin-bottom:12px}
+.sc-rows{border-top:1px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:5px}
+.sc-row{display:flex;justify-content:space-between;font-size:11px}
+.sc-row-lbl{color:var(--ink3)}.sc-row-val{font-family:var(--mono);font-weight:600;color:var(--ink2)}
+.sc-fte{font-size:10px;color:var(--ink4);font-family:var(--mono);margin-top:8px}
+.sum-table-wrap{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--sh)}
+.sum-table{width:100%;border-collapse:collapse;font-size:12px}
+.sum-table th{padding:10px 16px;text-align:left;font-size:10px;font-weight:700;color:var(--ink3);letter-spacing:.5px;text-transform:uppercase;background:var(--panel);border-bottom:1px solid var(--border)}
+.sum-table td{padding:11px 16px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--ink2)}
+.sum-table tr:last-child td{border-bottom:none}
+.sum-table .subtotal td{background:var(--panel);font-weight:600;font-size:11px;color:var(--ink3)}
+.sum-table .grand td{background:var(--ink);color:#fff;font-weight:700}
+.mono{font-family:var(--mono);font-weight:600}
+.loc-tag{font-size:10px;padding:2px 9px;border-radius:20px;font-weight:700;display:inline-block}
 
-  /* ── Summary panel ───────────────────────────────────────────────────────────*/
-  .summary { position: sticky; top: 72px; align-self: start; }
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+@media(max-width:700px){.sum-cards{grid-template-columns:repeat(2,1fr)}.cards-scroll{flex-direction:column}.loc-card{max-width:100%}}
 
-  .row {
-    display: flex; justify-content: space-between; align-items: baseline;
-    font-size: 12px; color: var(--k-muted); padding: 6px 0;
-    border-bottom: 1px solid #EEF1F8; gap: 8px;
-  }
-  .row:last-of-type { border-bottom: none; }
-  .row .v { font-size: 12px; color: var(--k-text); text-align: right; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-weight: 500; }
-  .row.hi .v { color: var(--k-blue); font-weight: 600; }
-  .row.hi span:first-child { color: var(--k-text); font-weight: 600; }
+/* ── HOOP PANEL ──────────────────────────────────────── */
+.hoop-bar{
+  background:#fff;border-bottom:1px solid var(--border);
+  padding:8px 24px;display:flex;align-items:center;gap:16px;flex-shrink:0;
+}
+.hoop-toggle{
+  display:flex;align-items:center;gap:7px;
+  background:none;border:1.5px solid var(--k-border);border-radius:8px;
+  padding:5px 13px;font-family:var(--font);font-size:12px;font-weight:600;
+  color:var(--ink2);cursor:pointer;transition:all .15s;
+}
+.hoop-toggle:hover{border-color:var(--k-blue);color:var(--k-blue);background:var(--k-sky);}
+.hoop-toggle.open{border-color:var(--k-blue);color:var(--k-blue);background:var(--k-sky);}
+.hoop-toggle-icon{font-size:9px;transition:transform .2s;display:inline-block;}
+.hoop-toggle.open .hoop-toggle-icon{transform:rotate(90deg);}
+.hoop-optional-badge{
+  font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  padding:2px 7px;border-radius:20px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;
+}
+.hoop-247-btn{
+  display:flex;align-items:center;gap:4px;
+  background:none;border:1.5px solid var(--k-border);border-radius:8px;
+  padding:5px 11px;font-family:var(--mono);font-size:11px;font-weight:700;
+  color:var(--ink3);cursor:pointer;transition:all .15s;letter-spacing:.5px;
+}
+.hoop-247-btn:hover{border-color:var(--k-success);color:var(--k-success);background:#e6faf4;}
+.hoop-clear-btn{
+  display:flex;align-items:center;gap:4px;
+  background:none;border:1.5px solid #fecaca;border-radius:8px;
+  padding:5px 11px;font-family:var(--font);font-size:11px;font-weight:600;
+  color:var(--k-danger);cursor:pointer;transition:all .15s;
+}
+.hoop-clear-btn:hover{background:#fef2f2;border-color:var(--k-danger);}
+.hoop-note{font-size:11px;color:var(--k-muted);font-style:italic;}
 
-  .sep { height: 1px; background: var(--k-border); margin: 12px 0; }
+.hoop-panel{
+  background:#fafbfd;border-bottom:2px solid var(--k-blue);
+  padding:18px 28px;display:flex;flex-wrap:wrap;gap:0;flex-shrink:0;
+}
+.hoop-section{flex:1;min-width:200px;padding:0 16px 0 0;}
+.hoop-notes-section{flex:2;min-width:300px;}
+.hoop-section-title{font-size:10px;font-weight:700;color:var(--k-muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;}
+.hoop-tz-note{font-size:10px;font-weight:400;color:var(--ink4);text-transform:none;letter-spacing:0;}
+.hoop-divider{width:1px;background:var(--border);margin:0 16px;flex-shrink:0;align-self:stretch;}
 
-  /* ── TCO box ──────────────────────────────────────────────────────────────────*/
-  .tco-box {
-    margin-top: 14px;
-    background: linear-gradient(135deg, var(--k-navy) 0%, #0A2257 100%);
-    border-radius: 10px;
-    padding: 18px 20px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .tco-box::before {
-    content: '';
-    position: absolute;
-    right: -20px; top: -30px;
-    width: 120px; height: 120px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(0,87,255,.4) 0%, transparent 70%);
-  }
-  .tco-label {
-    font-size: 9px; font-weight: 700; letter-spacing: 2px;
-    text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: 6px;
-  }
-  .tco-amount {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 30px; font-weight: 700; color: white; line-height: 1;
-  }
-  .tco-sub { font-size: 10px; color: rgba(255,255,255,.35); margin-top: 4px; }
+/* Days */
+.hoop-days{display:flex;gap:6px;flex-wrap:wrap;}
+.hoop-day-lbl{
+  display:flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:6px;border:1.5px solid var(--border);
+  background:var(--white);cursor:pointer;font-size:11px;font-weight:600;
+  color:var(--ink3);transition:all .15s;user-select:none;
+}
+.hoop-day-lbl:has(input:checked){background:var(--k-blue);border-color:var(--k-blue);color:#fff;}
+.hoop-day-lbl input{display:none;}
 
-  /* ── CTA button ──────────────────────────────────────────────────────────────*/
-  .btn-primary {
-    width: 100%; margin-top: 12px; padding: 11px;
-    background: var(--k-blue); border: none; border-radius: 8px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 13px; font-weight: 700; color: white;
-    cursor: pointer; letter-spacing: .3px; transition: all .18s;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .btn-primary:hover { background: var(--k-blue2); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+/* Hours */
+.hoop-hours-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.hoop-time-input{
+  background:var(--white);border:1.5px solid var(--border);border-radius:7px;
+  font-family:var(--mono);font-size:13px;font-weight:600;color:var(--ink);
+  padding:5px 8px;outline:none;transition:border-color .15s;
+}
+.hoop-time-input:focus{border-color:var(--k-blue);}
+.hoop-to{font-size:11px;color:var(--ink4);font-weight:600;}
+.hoop-tz-sel{
+  appearance:none;background:var(--white);border:1.5px solid var(--border);
+  border-radius:7px;font-family:var(--font);font-size:12px;font-weight:600;
+  color:var(--ink2);padding:5px 26px 5px 9px;outline:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 7px center;
+  transition:border-color .15s;
+}
+.hoop-tz-sel:focus{border-color:var(--k-blue);}
 
-  /* ── Breakdown metric cards ──────────────────────────────────────────────────*/
-  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0; }
-  .metric {
-    background: var(--k-off);
-    border: 1.5px solid var(--k-border);
-    border-radius: 8px;
-    padding: 10px 12px;
-  }
-  .metric .m-label { font-size: 10px; color: var(--k-muted); font-weight: 500; margin-bottom: 4px; }
-  .metric .m-val { font-size: 14px; font-weight: 700; color: var(--k-text); font-family: 'JetBrains Mono', monospace; }
-  .metric.hi { border-color: var(--k-blue); background: var(--k-sky); }
-  .metric.hi .m-val { color: var(--k-blue); }
+/* Splits */
+.hoop-splits-grid{display:flex;gap:12px;flex-wrap:wrap;}
+.hoop-split-item{display:flex;flex-direction:column;gap:5px;}
+.hoop-split-lbl{font-size:10px;font-weight:600;color:var(--ink3);}
+.hoop-split-row{display:flex;align-items:center;gap:4px;}
+.hoop-split-input{
+  width:72px;background:var(--white);border:1.5px solid var(--border);border-radius:7px;
+  font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);
+  padding:5px 8px;outline:none;-moz-appearance:textfield;text-align:right;
+  transition:border-color .15s;
+}
+.hoop-split-input::-webkit-outer-spin-button,.hoop-split-input::-webkit-inner-spin-button{-webkit-appearance:none;}
+.hoop-split-input:focus{border-color:var(--k-blue);}
+.hoop-split-sym{font-size:11px;color:var(--ink4);font-weight:600;}
+.hoop-split-warn{font-size:11px;color:var(--k-danger);font-weight:600;margin-top:7px;display:flex;align-items:center;gap:4px;}
 
-  /* ── Pricing model highlight row ─────────────────────────────────────────────*/
-  .model-result {
-    margin-top: 12px;
-    background: var(--k-blue);
-    border-radius: 8px;
-    padding: 12px 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-  }
-  .model-result .mr-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.7); }
-  .model-result .mr-val { font-size: 15px; font-weight: 700; color: white; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+/* Notes */
+.hoop-notes-input{
+  width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:8px;
+  font-family:var(--font);font-size:12px;color:var(--ink2);padding:8px 12px;
+  outline:none;resize:vertical;line-height:1.55;transition:border-color .15s;
+}
+.hoop-notes-input:focus{border-color:var(--k-blue);}
 
-  /* ── Alert ───────────────────────────────────────────────────────────────────*/
-  .alert {
-    display: none;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--k-danger);
-    background: rgba(229,57,53,.07);
-    border: 1px solid rgba(229,57,53,.2);
-    border-radius: 6px;
-    padding: 7px 10px;
-    margin-top: 8px;
-  }
+/* Summary chip strip */
+.hoop-summary{
+  width:100%;margin-top:12px;padding-top:12px;
+  border-top:1px dashed var(--border);
+  display:flex;flex-wrap:wrap;gap:6px;font-size:11px;
+}
+.hoop-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--k-sky);border:1px solid #b8d0ff;
+  color:var(--k-blue);font-weight:600;border-radius:20px;padding:3px 10px;
+}
 
-  /* ── CM note ──────────────────────────────────────────────────────────────────*/
-  .cm-note { font-size: 10px; color: var(--k-muted); font-weight: 400; }
+/* HOOP-adjusted FTE */
+.hoop-fte-row{margin-top:10px;padding:8px 10px;background:var(--k-sky);border-radius:8px;border:1px solid #b8d0ff;}
+.hoop-fte-label{font-size:9px;font-weight:700;color:var(--k-blue);letter-spacing:.6px;text-transform:uppercase;margin-bottom:2px;}
+.hoop-fte-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--k-blue);line-height:1;}
+.hoop-fte-detail{font-size:10px;color:var(--k-text2);margin-top:3px;line-height:1.4;}
 
-  /* ── Info box ─────────────────────────────────────────────────────────────────*/
-  .info-box {
-    font-size: 11px; color: var(--k-muted);
-    background: var(--k-sky);
-    border-radius: 6px;
-    padding: 8px 10px;
-    margin-top: 10px;
-    line-height: 1.5;
-  }
+/* ── EQUAL MODE DISCLAIMER ───────────────────────── */
+.eq-disclaimer{
+  display:none;background:#fffbeb;border-bottom:1px solid #fde68a;
+  padding:9px 24px;font-size:11px;color:#92400e;font-weight:500;
+  align-items:center;gap:8px;flex-shrink:0;
+}
+.eq-disclaimer.show{display:flex}
+.eq-disclaimer strong{font-weight:700}
+/* ── 24/7 SPLIT NUDGE ────────────────────────────── */
+.hoop-247-nudge{
+  display:none;margin:10px 0 0;padding:8px 12px;
+  background:#fef3c7;border:1px solid #fbbf24;border-radius:7px;
+  font-size:11px;color:#92400e;font-weight:600;line-height:1.5;
+}
+.hoop-247-nudge.show{display:flex;align-items:flex-start;gap:7px}
+/* ── HOME BUTTON ─────────────────────────────────────── */
+.home-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:8px;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  color:#fff;cursor:pointer;transition:all .15s;flex-shrink:0;
+}
+.home-btn:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.35);}
 
-  /* ── Seat grid ────────────────────────────────────────────────────────────────*/
-  .seat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .seat-item {
-    display: flex; justify-content: space-between;
-    padding: 7px 10px; background: var(--k-off);
-    border: 1px solid var(--k-border); border-radius: 6px;
-  }
-  .seat-item .s-loc { font-size: 11px; color: var(--k-muted); }
-  .seat-item .s-val { font-size: 11px; font-weight: 600; color: var(--k-text); font-family: 'JetBrains Mono', monospace; }
+/* ── HOME MODAL ──────────────────────────────────────── */
+.home-modal-overlay{
+  display:none;position:fixed;inset:0;z-index:999;
+  background:rgba(6,21,43,.55);backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;
+}
+.home-modal-overlay.show{display:flex;}
+.home-modal{
+  background:#fff;border-radius:16px;padding:32px 28px 24px;
+  max-width:380px;width:90%;box-shadow:0 24px 64px rgba(0,0,0,.22);
+  text-align:center;animation:modalIn .2s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.94) translateY(8px)}to{opacity:1;transform:none}}
+.home-modal-icon{font-size:36px;margin-bottom:12px;line-height:1;}
+.home-modal-title{font-size:16px;font-weight:800;color:var(--k-text);margin-bottom:10px;letter-spacing:-.3px;}
+.home-modal-body{font-size:12px;color:var(--k-muted);line-height:1.65;margin-bottom:24px;}
+.home-modal-actions{display:flex;gap:10px;}
+.hm-btn{flex:1;padding:10px 14px;border-radius:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .15s;}
+.hm-btn-ok{background:var(--k-sky);color:var(--k-blue);}
+.hm-btn-ok:hover{background:#d4e4ff;}
+.hm-btn-home{background:var(--k-blue);color:#fff;}
+.hm-btn-home:hover{background:var(--k-blue2);}
+/* ── ERLANG C CARDS ──────────────────────────────── */
+/* View background */
+#view-erlang{background:var(--erlang-l)}
+/* Input strip */
+#gs-erlang{background:var(--erlang-m);border-bottom:2px solid var(--erlang-b)}
+#gs-erlang .gs-label{color:var(--erlang-c)}
+#gs-erlang .gs-unit{color:var(--erlang-c);opacity:.7}
+#gs-erlang .gs-input{border-color:var(--erlang-b);background:#fff}
+#gs-erlang .gs-input:focus{border-color:var(--erlang-c);box-shadow:0 0 0 3px rgba(124,58,237,.12)}
+#gs-erlang .vol-period-sel{background:var(--erlang-c)}
+#gs-erlang .vol-period-sel:hover{background:#6d28d9}
+#gs-erlang .gs-info{color:var(--erlang-c);opacity:.75}
+/* Cards */
+.ec-card{flex:1;min-width:200px;max-width:250px;background:var(--white);border:1px solid var(--erlang-b);border-radius:12px;box-shadow:0 1px 3px rgba(124,58,237,.1),0 4px 12px rgba(124,58,237,.08);overflow:hidden}
+.ec-card.c1{border-top:3px solid var(--c1)}.ec-card.c2{border-top:3px solid var(--c2)}.ec-card.c3{border-top:3px solid var(--c3)}.ec-card.c4{border-top:3px solid var(--c4)}.ec-card.c5{border-top:3px solid var(--c5)}
+.ec-head{padding:12px 14px;background:var(--erlang-m);border-bottom:1px solid var(--erlang-b)}
+.ec-loc-name{font-size:13px;font-weight:700;color:var(--ink)}
+.ec-loc-country{font-size:11px;color:var(--erlang-c);margin-top:2px;font-weight:500}
+.ec-body{padding:14px}
+.ec-row{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;margin-bottom:5px}
+.ec-lbl{color:var(--ink4);font-weight:500}
+.ec-val{font-family:var(--mono);font-weight:600;color:var(--ink3);font-size:11px}
+.ec-divider{height:1px;background:var(--erlang-b);margin:10px 0 8px;opacity:.5}
+.ec-fte-lbl{font-size:10px;font-weight:700;color:var(--erlang-c);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}
+.ec-fte{font-family:var(--mono);font-size:28px;font-weight:700;line-height:1;color:var(--erlang-c)}
+.ec-sl-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:6px}
+.ec-sl-badge.ok{background:#d1fae5;color:#065f46}.ec-sl-badge.warn{background:#fef3c7;color:#92400e}.ec-sl-badge.err{background:#fee2e2;color:#991b1b}
+.ec-vs-workload{margin-top:6px;font-size:10px;color:var(--erlang-c);opacity:.7;font-family:var(--mono)}
+/* Erlang C FTE highlight box — violet */
+.ec-fte-box{margin-top:10px;padding:10px 12px;background:linear-gradient(135deg,var(--erlang-m) 0%,#ddd6fe 100%);border:2px solid var(--erlang-c);border-radius:10px}
+.ec-fte-box-lbl{font-size:9px;font-weight:800;color:var(--erlang-c);letter-spacing:.8px;text-transform:uppercase;margin-bottom:2px}
+.ec-fte-box-val{font-family:var(--mono);font-size:32px;font-weight:800;color:var(--erlang-c);line-height:1}
+.ec-fte-box-sub{font-size:10px;color:var(--erlang-c);margin-top:4px;line-height:1.4;opacity:.8}
+.ec-occ-pill{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#fff3cd;color:#856404;border:1px solid #ffc107}
+.ec-occ-pill.safe{background:#d1fae5;color:#065f46;border-color:#6ee7b7}
+.ec-occ-pill.warn{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+/* Info box inside Erlang view */
+#view-erlang .ec-info-box{background:#ede9fe;border:1px solid var(--erlang-b);border-radius:10px}
+/* Headcount warning banner */
+.hc-warn-banner{display:none;margin-top:8px;padding:7px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;font-size:10px;color:#92400e;font-weight:600;line-height:1.5}
+.hc-warn-banner.show{display:block}
+/* ── HELP BUTTON ─────────────────────────────────── */
+.help-btn{
+  display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);
+  border:1.5px solid rgba(255,255,255,.3);border-radius:20px;
+  padding:5px 13px 5px 10px;color:#fff;font-size:11px;font-weight:700;
+  cursor:pointer;transition:background .15s,border-color .15s;letter-spacing:.2px;
+  white-space:nowrap;
+}
+.help-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+.help-btn svg{flex-shrink:0}
 
-  /* ── GM box ───────────────────────────────────────────────────────────────────*/
-  .gm-breakdown {
-    display: none; margin-top: 12px;
-    border: 1px solid var(--k-border); border-radius: 8px; overflow: hidden;
-  }
-  .gm-row {
-    display: flex; justify-content: space-between;
-    padding: 8px 12px; font-size: 12px; color: var(--k-muted);
-    border-bottom: 1px solid #EEF1F8;
-  }
-  .gm-row:last-child { border-bottom: none; background: var(--k-sky); font-weight: 600; }
-  .gm-row .gv { font-family: 'JetBrains Mono', monospace; color: var(--k-text); font-weight: 500; }
-  .gm-row:last-child .gv { color: var(--k-blue); }
-
-  /* ── GM label ─────────────────────────────────────────────────────────────────*/
-  .gm-label-row { font-size: 11px; font-weight: 600; color: var(--k-text2); margin-bottom: 6px; }
-  .gm-label-row strong { color: var(--k-blue); }
-
-  /* ── Modal ───────────────────────────────────────────────────────────────────*/
-  #qModal {
-    display: none; position: fixed; inset: 0;
-    background: rgba(6,21,43,.75); backdrop-filter: blur(6px);
-    z-index: 100; align-items: center; justify-content: center; padding: 20px;
-  }
-  .mi {
-    background: white; border-radius: 14px; max-width: 540px; width: 100%;
-    padding: 32px; position: relative; max-height: 90vh; overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0,0,0,.3);
-  }
-  .mi-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-  .mi-header h2 { font-size: 18px; font-weight: 800; color: var(--k-text); }
-  .mi-header .badge { background: var(--k-blue); color: white; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; }
-  .mi-sub { font-size: 10px; color: var(--k-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
-  #qContent { font-size: 12px; line-height: 2; color: var(--k-text2); white-space: pre-line; font-family: 'JetBrains Mono', monospace; }
-  .mi-actions { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--k-border); display: flex; gap: 10px; }
-  .btn-copy { flex: 1; padding: 10px; background: var(--k-off); border: 1.5px solid var(--k-border); border-radius: 8px; color: var(--k-text2); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; }
-  .btn-done { flex: 1; padding: 10px; background: var(--k-blue); border: none; border-radius: 8px; color: white; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; }
-  .cbtn { position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--k-muted); font-size: 18px; cursor: pointer; line-height: 1; }
+/* ── GUIDE MODAL ─────────────────────────────────── */
+.guide-overlay{
+  display:none;position:fixed;inset:0;background:rgba(10,10,30,.55);
+  z-index:1000;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(3px);
+}
+.guide-overlay.open{display:flex}
+.guide-modal{
+  background:#fff;border-radius:18px;
+  box-shadow:0 24px 80px rgba(0,0,0,.22);
+  width:100%;max-width:780px;max-height:88vh;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+/* header band */
+.gm-head{
+  background:linear-gradient(135deg,#1211E6 0%,#4338ca 100%);
+  padding:24px 28px 20px;color:#fff;flex-shrink:0;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+}
+.gm-head-left{flex:1}
+.gm-pretitle{font-size:10px;font-weight:700;letter-spacing:1.2px;opacity:.7;text-transform:uppercase;margin-bottom:4px}
+.gm-title{font-size:22px;font-weight:800;line-height:1.2;margin-bottom:6px}
+.gm-subtitle{font-size:12px;opacity:.8;line-height:1.5}
+.gm-close{background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.gm-close:hover{background:rgba(255,255,255,.3)}
+/* progress dots */
+.gm-dots{display:flex;gap:6px;padding:14px 28px 0;flex-shrink:0;background:#fff}
+.gm-dot{height:4px;border-radius:2px;background:#e5e7eb;transition:all .25s;cursor:pointer}
+.gm-dot.active{background:#1211E6;width:24px !important}
+.gm-dot:not(.active){width:8px}
+/* content area */
+.gm-body{flex:1;overflow-y:auto;padding:20px 28px 10px}
+/* slide */
+.gm-slide{display:none}
+.gm-slide.active{display:block}
+.gm-slide-icon{font-size:32px;margin-bottom:8px}
+.gm-slide-title{font-size:16px;font-weight:800;color:#1e1b4b;margin-bottom:6px}
+.gm-slide-desc{font-size:12px;color:#4b5563;line-height:1.7;margin-bottom:14px}
+/* feature grid */
+.gm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.gm-card{background:#f8faff;border:1px solid #e0e7ff;border-radius:10px;padding:12px 14px}
+.gm-card-icon{font-size:18px;margin-bottom:4px}
+.gm-card-title{font-size:11px;font-weight:700;color:#1e1b4b;margin-bottom:3px}
+.gm-card-body{font-size:11px;color:#6b7280;line-height:1.55}
+/* step list */
+.gm-steps{list-style:none;padding:0;margin:0 0 14px;display:flex;flex-direction:column;gap:8px}
+.gm-step{display:flex;gap:12px;align-items:flex-start}
+.gm-step-num{width:22px;height:22px;border-radius:50%;background:#1211E6;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.gm-step-body{flex:1}
+.gm-step-title{font-size:12px;font-weight:700;color:#1e1b4b;margin-bottom:1px}
+.gm-step-desc{font-size:11px;color:#6b7280;line-height:1.55}
+/* tip box */
+.gm-tip{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 13px;font-size:11px;color:#92400e;line-height:1.6;margin-bottom:12px;display:flex;gap:8px}
+.gm-tip-icon{flex-shrink:0;font-size:14px}
+/* erlang highlight */
+.gm-erlang-band{background:var(--erlang-m,#f5f3ff);border:1.5px solid var(--erlang-b,#c4b5fd);border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.gm-erlang-title{font-size:12px;font-weight:800;color:var(--erlang-c,#7c3aed);margin-bottom:4px}
+.gm-erlang-body{font-size:11px;color:#4b5563;line-height:1.6}
+/* footer */
+.gm-footer{display:flex;align-items:center;justify-content:space-between;padding:14px 28px 20px;flex-shrink:0;border-top:1px solid #f3f4f6;background:#fff}
+.gm-counter{font-size:11px;color:#9ca3af;font-weight:600}
+.gm-nav{display:flex;gap:8px}
+.gm-btn{padding:8px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;border:none}
+.gm-btn-prev{background:#f3f4f6;color:#374151}
+.gm-btn-prev:hover{background:#e5e7eb}
+.gm-btn-next{background:#1211E6;color:#fff}
+.gm-btn-next:hover{background:#0f0ec4}
+.gm-btn-done{background:#059669;color:#fff}
+.gm-btn-done:hover{background:#047857}
 </style>
-</head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-brand">
-    <img src="Konecta-Logo.jpg" alt="Konecta-Logo" class="topbar-logo-img">
+<div class="header">
+  <div class="logo">
+    <button class="home-btn" onclick="showHomeModal()" title="Go to Presales Suite Hub">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+    </button>
+    <div class="h-sep" style="background:rgba(255,255,255,.18)"></div>
+    <div><div class="logo-text">RFP Sizing Calculator</div><div class="logo-sub">ESM Multi Location</div></div>
   </div>
-  <div class="topbar-badge">Revenue &amp; CM Calculator</div>
+  <div class="header-right">
+    <button class="help-btn" onclick="openGuide()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      How to use
+    </button>
+    <div class="shrink-pill">Shrinkage: <strong id="tb-shrink">30%</strong> <span id="tb-shrink-detail" style="color:rgba(255,255,255,.5)">(10% util + 20% avail)</span></div>
+  </div>
 </div>
 
-<div class="page">
+<!-- ═══════════════════════════════════════════════════
+     HOW TO USE GUIDE MODAL
+════════════════════════════════════════════════════ -->
+<div class="guide-overlay" id="guideOverlay" onclick="onGuideOverlayClick(event)">
+  <div class="guide-modal" id="guideModal">
 
-  <div class="hero">
-    <div class="hero-text">
-      <h1>ESM Salesforce Revenue &amp; CM Calculator</h1>
+    <!-- Header band -->
+    <div class="gm-head">
+      <div class="gm-head-left">
+        <div class="gm-pretitle">ESM Multi Location RFP Sizing Calculator</div>
+        <div class="gm-title">How to use this tool</div>
+        <div class="gm-subtitle">A step-by-step guide to sizing your contact centre workforce accurately</div>
+      </div>
+      <button class="gm-close" onclick="closeGuide()">✕</button>
     </div>
-    <div style="display:flex;gap:12px;flex-shrink:0">
-      <div class="hero-stat">
-        <div class="label">Monthly TCO</div>
-        <div class="val" id="heroTCO">—</div>
-        <div class="unit">live estimate</div>
-      </div>
-      <div class="hero-stat" style="border-color:rgba(0,229,160,.35);background:rgba(0,229,160,.08)">
-        <div class="label">ITY Revenue</div>
-        <div class="val" id="heroITY" style="color:#34d399">—</div>
-        <div class="unit" id="heroITYUnit">in-year estimate</div>
-      </div>
-      <div class="hero-stat" style="border-color:rgba(0,87,255,.35);background:rgba(0,87,255,.12)">
-        <div class="label">TCV</div>
-        <div class="val" id="heroTCV" style="color:#60a5fa">—</div>
-        <div class="unit" id="heroTCVUnit">total contract value</div>
-      </div>
-    </div>
-  </div>
 
-  <div class="layout">
-  <div>
+    <!-- Progress dots -->
+    <div class="gm-dots" id="gm-dots"></div>
 
-    <div class="card">
-      <div class="card-title"><span class="dot"></span>Service Configuration</div>
+    <!-- Slide content -->
+    <div class="gm-body">
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="fg">
-          <div class="fg-label">Agent Location</div>
-          <select id="location" onchange="onLocChange()">
-            <option value="US">🇺🇸 United States</option>
-            <option value="UK">🇬🇧 United Kingdom</option>
-            <option value="ZA">🇿🇦 South Africa</option>
-            <option value="PH">🇵🇭 Philippines</option>
-            <option value="IN">🇮🇳 India</option>
-          </select>
-        </div>
-        <div class="fg">
-          <div class="fg-label">Start Month</div>
-          <select id="startMonth" onchange="calc()">
-            <option value="1">January</option>
-            <option value="2">February</option>
-            <option value="3">March</option>
-            <option value="4">April</option>
-            <option value="5">May</option>
-            <option value="6">June</option>
-            <option value="7">July</option>
-            <option value="8">August</option>
-            <option value="9">September</option>
-            <option value="10">October</option>
-            <option value="11">November</option>
-            <option value="12">December</option>
-          </select>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="fg">
-          <div class="fg-label">Engagement Model</div>
-          <div class="tg">
-            <label><input type="radio" name="model" value="onsite" checked onchange="refreshRolesTable();calc()"><span>Onsite</span></label>
-            <label><input type="radio" name="model" value="waha" onchange="refreshRolesTable();calc()"><span>WAHA</span></label>
+      <!-- SLIDE 1: What is this tool? -->
+      <div class="gm-slide active" id="gm-slide-0">
+        <div class="gm-slide-icon">🎯</div>
+        <div class="gm-slide-title">What does this tool do?</div>
+        <div class="gm-slide-desc">The RFP Sizing Calculator helps you calculate the <strong>number of Full-Time Equivalents (FTE)</strong> needed to handle a given contact volume across multiple locations and channels. It accounts for real-world factors like shrinkage, shift patterns, and operating hours — so your headcount estimates are grounded in operational reality, not just raw workload maths.</div>
+        <div class="gm-grid">
+          <div class="gm-card">
+            <div class="gm-card-icon">📞</div>
+            <div class="gm-card-title">Phone</div>
+            <div class="gm-card-body">Volume in calls/month with AHT in seconds or minutes. Supports HOOP shift bands and peak/off-peak splits.</div>
+          </div>
+          <div class="gm-card">
+            <div class="gm-card-icon">💬</div>
+            <div class="gm-card-title">Chat</div>
+            <div class="gm-card-body">Same as phone, plus a concurrency multiplier (default 1.2) which divides the FTE requirement by the average simultaneous chats per agent.</div>
+          </div>
+          <div class="gm-card">
+            <div class="gm-card-icon">✉️</div>
+            <div class="gm-card-title">Email</div>
+            <div class="gm-card-body">Async channel. Supports a target response SLA % and a backlog buffer to account for queued work beyond the day's arrivals.</div>
+          </div>
+          <div class="gm-card">
+            <div class="gm-card-icon">📊</div>
+            <div class="gm-card-title">Summary</div>
+            <div class="gm-card-body">Cross-channel view showing all locations, workload hours, attendance hours, FTE, and monthly contracted hours in one table.</div>
           </div>
         </div>
-        <div class="fg">
-          <div class="fg-label">Display Currency</div>
-          <select id="displayCurrency" onchange="calc()">
-            <option value="USD">USD — $</option>
-            <option value="EUR">EUR — €</option>
-            <option value="GBP">GBP — £</option>
-          </select>
-        </div>
+        <div class="gm-tip"><div class="gm-tip-icon">💡</div><div>This tool does <strong>not</strong> save data automatically. Always copy or screenshot your results before leaving the page.</div></div>
       </div>
 
-      <div class="fg">
-        <div class="fg-label">Agent Tier</div>
-        <div class="tg">
-          <label><input type="radio" name="tier" value="1" checked onchange="onLocChange()"><span>Tier 1</span></label>
-          <label><input type="radio" name="tier" value="2" onchange="onLocChange()"><span>Tier 2 (+20%)</span></label>
-        </div>
-        <div class="rate-note" id="rateNote">Tier 1 — $17.00/hr · US</div>
+      <!-- SLIDE 2: Locations & Volume Mode -->
+      <div class="gm-slide" id="gm-slide-1">
+        <div class="gm-slide-icon">🌍</div>
+        <div class="gm-slide-title">Locations & Volume Mode</div>
+        <div class="gm-slide-desc">The tool supports up to <strong>5 locations</strong> across Philippines, India, South Africa, USA, and UK. Each location carries its own contracted hours/month, shift length, and shrinkage profile. You control how volume is distributed using the toggle in the top-right of each channel tab.</div>
+        <ul class="gm-steps">
+          <li class="gm-step"><div class="gm-step-num">1</div><div class="gm-step-body"><div class="gm-step-title">⚖ Equal volumes</div><div class="gm-step-desc">The same total volume is sent to every active location. Use this when you haven't yet decided on a location split. <strong>Important:</strong> deselect locations that are not in scope using the ✓ toggle on their card — otherwise their FTE will be overcounted.</div></div></li>
+          <li class="gm-step"><div class="gm-step-num">2</div><div class="gm-step-body"><div class="gm-step-title">↗ Split volumes</div><div class="gm-step-desc">Assign a percentage of total volume to each location (must sum to 100%). Use this when you have a defined routing strategy, e.g. 60% PH / 40% IN.</div></div></li>
+        </ul>
+        <div class="gm-tip"><div class="gm-tip-icon">⚠️</div><div>In <strong>Equal volumes mode</strong>, all 5 locations receive the full volume by default. Always deactivate locations not in scope — the amber banner at the top of the channel view is your reminder.</div></div>
       </div>
 
-      <div class="fg">
-        <div class="fg-label">Pricing Model</div>
-        <select id="pricingModel" onchange="updatePricingNote();calc()">
-          <option value="fte">Price per FTE</option>
-          <option value="attendance">Price per Attendance Hour</option>
-          <option value="productive">Price per Productive Hour</option>
-          <option value="transaction">Price per Transaction Hour</option>
-          <option value="minute">Price per Minute</option>
+      <!-- SLIDE 3: Shrinkage (Util & Availability) -->
+      <div class="gm-slide" id="gm-slide-2">
+        <div class="gm-slide-icon">📉</div>
+        <div class="gm-slide-title">Shrinkage — Utilisation & Availability</div>
+        <div class="gm-slide-desc">Shrinkage accounts for the gap between an agent being <em>scheduled</em> and being <em>available to handle contacts</em>. It is split into two components, both editable on each location card.</div>
+        <ul class="gm-steps">
+          <li class="gm-step"><div class="gm-step-num">1</div><div class="gm-step-body"><div class="gm-step-title">Utilisation % (default 10%)</div><div class="gm-step-desc">Time lost to non-productive scheduled activities — team meetings, coaching, training, system downtime. Applied first in the formula: <strong>Attendance hrs = Workload hrs ÷ (1 − Util)</strong></div></div></li>
+          <li class="gm-step"><div class="gm-step-num">2</div><div class="gm-step-body"><div class="gm-step-title">Availability % (default 20%)</div><div class="gm-step-desc">Time lost to unplanned absence — sick leave, attrition buffer, late arrivals. Applied second: <strong>Attendance hrs ÷ (1 − Availability)</strong></div></div></li>
+          <li class="gm-step"><div class="gm-step-num">3</div><div class="gm-step-body"><div class="gm-step-title">Combined Shrinkage</div><div class="gm-step-desc">At defaults (10% + 20%), total shrinkage = ~28%. Shown in the top-right pill of the header. Click any % field on a location card to edit it.</div></div></li>
+        </ul>
+        <div class="gm-tip"><div class="gm-tip-icon">💡</div><div>Industry benchmarks: Utilisation 8–15%, Availability 15–25%. Higher shrinkage = more FTE required. Lowering shrinkage improves efficiency on paper but increases risk.</div></div>
+      </div>
+
+      <!-- SLIDE 4: HOOP — Operating Hours & Shift Bands -->
+      <div class="gm-slide" id="gm-slide-3">
+        <div class="gm-slide-icon">🕐</div>
+        <div class="gm-slide-title">HOOP — Hours of Operation</div>
+        <div class="gm-slide-desc">The HOOP panel (expandable below each channel's input strip) lets you define <strong>when</strong> your operation runs. This converts the base workload FTE into a <strong>unique headcount</strong> that accounts for shift rotation and coverage patterns.</div>
+        <ul class="gm-steps">
+          <li class="gm-step"><div class="gm-step-num">1</div><div class="gm-step-body"><div class="gm-step-title">Operating days & hours</div><div class="gm-step-desc">Select which days of the week are staffed and set open/close times. Use the <strong>24/7</strong> shortcut for round-the-clock operations.</div></div></li>
+          <li class="gm-step"><div class="gm-step-num">2</div><div class="gm-step-body"><div class="gm-step-title">Shift rotation multiplier</div><div class="gm-step-desc">If your operating window is longer than the country's standard shift (e.g. 12h window ÷ 9h PH shift = 2 rotations), the tool automatically multiplies FTE to give the correct unique headcount.</div></div></li>
+          <li class="gm-step"><div class="gm-step-num">3</div><div class="gm-step-body"><div class="gm-step-title">Weekday / Weekend splits</div><div class="gm-step-desc">Enter the % of volume handled on weekdays vs weekends. The tool calculates each band's FTE independently and sums to a total unique headcount. <strong>Required for 24/7 operations.</strong></div></div></li>
+          <li class="gm-step"><div class="gm-step-num">4</div><div class="gm-step-body"><div class="gm-step-title">Peak / Off-peak splits</div><div class="gm-step-desc">For operations with a defined busy period (e.g. 70% peak, 30% off-peak), these bands are staffed independently with a minimum of 3 FTE per active band.</div></div></li>
+        </ul>
+        <div class="gm-tip"><div class="gm-tip-icon">⚠️</div><div>For 24/7 coverage with weekend staffing, always enter Weekday % and Weekend % — the tool will prompt you if these are missing.</div></div>
+      </div>
+
+      <!-- SLIDE 5: FTE vs Unique Headcount -->
+      <div class="gm-slide" id="gm-slide-4">
+        <div class="gm-slide-icon">👥</div>
+        <div class="gm-slide-title">FTE vs Unique Headcount — What's the Difference?</div>
+        <div class="gm-slide-desc">This is one of the most important distinctions in workforce sizing. The two numbers answer different questions.</div>
+        <div class="gm-grid">
+          <div class="gm-card">
+            <div class="gm-card-icon">📋</div>
+            <div class="gm-card-title">Base FTE (workload)</div>
+            <div class="gm-card-body">How many full-time agents' worth of work exists, accounting for shrinkage. This is the <em>minimum</em> if everyone worked the same shift with no rotation.</div>
+          </div>
+          <div class="gm-card" style="border-color:#fde68a;background:#fffbeb">
+            <div class="gm-card-icon">🧑‍🤝‍🧑</div>
+            <div class="gm-card-title">Unique Headcount (HOOP)</div>
+            <div class="gm-card-body">How many <em>individual people</em> you need to hire, once you account for shift rotations, band splits, and minimum staffing floors. Always ≥ base FTE.</div>
+          </div>
+        </div>
+        <ul class="gm-steps">
+          <li class="gm-step"><div class="gm-step-num">!</div><div class="gm-step-body"><div class="gm-step-title">When to use which</div><div class="gm-step-desc">Use <strong>Base FTE</strong> for capacity planning and commercial proposals. Use <strong>Unique Headcount</strong> for hiring plans, seat counts, and operational budgeting. When an amber warning appears on a card, it means unique headcount exceeds base FTE — <strong>hire to the higher number.</strong></div></div></li>
+        </ul>
+        <div class="gm-tip"><div class="gm-tip-icon">💡</div><div>Example: 660 calls/month, 5.5 min AHT, Mon–Fri 08:00–20:00 at a PH site → Base FTE = 1, but 12h window ÷ 9h shift = 2 rotations → <strong>Unique HC = 2.</strong> You cannot staff a 12-hour window with one person.</div></div>
+      </div>
+
+      <!-- SLIDE 6: Erlang C -->
+      <div class="gm-slide" id="gm-slide-5">
+        <div class="gm-slide-icon">🔢</div>
+        <div class="gm-slide-title">Erlang C — Queue-Based Staffing</div>
+        <div class="gm-slide-desc">The <span style="background:var(--erlang-m,#f5f3ff);color:var(--erlang-c,#7c3aed);padding:1px 7px;border-radius:4px;font-weight:700;font-size:11px">🔢 Erlang C</span> tab provides a second, independent view of your staffing requirement using a queuing model — more appropriate for real-time channels like phone and chat.</div>
+        <div class="gm-erlang-band">
+          <div class="gm-erlang-title">Why Erlang C gives a higher FTE than simple workload</div>
+          <div class="gm-erlang-body">Simple workload assumes contacts arrive smoothly and evenly. In reality, calls arrive randomly. Erlang C models this randomness and calculates the agents needed so that <strong>X% of contacts are answered within Y seconds</strong> (your service level target). It typically adds 10–30% more agents than workload FTE.</div>
+        </div>
+        <ul class="gm-steps">
+          <li class="gm-step"><div class="gm-step-num">1</div><div class="gm-step-body"><div class="gm-step-title">Set your service level target</div><div class="gm-step-desc">Default is 80% of contacts answered within 20 seconds — a common industry benchmark. Adjust to match your SLA.</div></div></li>
+          <li class="gm-step"><div class="gm-step-num">2</div><div class="gm-step-body"><div class="gm-step-title">Occupancy is a calculated output</div><div class="gm-step-desc">Erlang C calculates occupancy (A/N) for you — it is not an input. The <strong>Occ Cap</strong> is a safety ceiling. Raising it allows fewer agents (higher burnout risk); lowering it forces more agents.</div></div></li>
+          <li class="gm-step"><div class="gm-step-num">3</div><div class="gm-step-body"><div class="gm-step-title">Use Erlang C for commercial SLA commitments</div><div class="gm-step-desc">If you're bidding on a contract with a defined SLA (e.g. "80/20"), use the Erlang C FTE in your commercial model, not the workload FTE. The delta vs workload is shown on each location card.</div></div></li>
+        </ul>
+        <div class="gm-tip"><div class="gm-tip-icon">📧</div><div>Email does not queue — Erlang C does not apply. The Email card in Erlang C view uses a workload + SL-buffer approach as a conservative estimate only.</div></div>
+      </div>
+
+      <!-- SLIDE 7: Quick Reference -->
+      <div class="gm-slide" id="gm-slide-6">
+        <div class="gm-slide-icon">⚡</div>
+        <div class="gm-slide-title">Quick Start Checklist</div>
+        <div class="gm-slide-desc">Follow these steps to get an accurate sizing in under 5 minutes.</div>
+        <ul class="gm-steps">
+          <li class="gm-step"><div class="gm-step-num">1</div><div class="gm-step-body"><div class="gm-step-title">Select your volume mode</div><div class="gm-step-desc">⚖ Equal — if you haven't decided on location split yet. ↗ Split — if you have a defined routing strategy.</div></div></li>
+          <li class="gm-step"><div class="gm-step-num">2</div><div class="gm-step-body"><div class="gm-step-title">Deactivate out-of-scope locations</div><div class="gm-step-desc">In equal mode, click the ✓ on location cards to deactivate any country not being staffed. This prevents their volume from being counted.</div></div></li>
+          <li class="gm-step"><div class="gm-step-num">3</div><div class="gm-step-body"><div class="gm-step-title">Enter volume & AHT for each channel</div><div class="gm-step-desc">Use the strip at the top of each tab. Volume can be monthly or annual. AHT can be seconds (phone default) or minutes.</div></div></li>
+          <li class="gm-step"><div class="gm-step-num">4</div><div class="gm-step-body"><div class="gm-step-title">Set HOOP operating window</div><div class="gm-step-desc">Expand the HOOP panel and set operating days + hours. Add weekday/weekend splits if relevant. This unlocks unique headcount.</div></div></li>
+          <li class="gm-step"><div class="gm-step-num">5</div><div class="gm-step-body"><div class="gm-step-title">Review warnings</div><div class="gm-step-desc">Amber banners mean you need to take action — e.g. deselect locations, add splits, or hire to unique HC instead of base FTE.</div></div></li>
+          <li class="gm-step"><div class="gm-step-num">6</div><div class="gm-step-body"><div class="gm-step-title">Check Erlang C for SLA-based sizing</div><div class="gm-step-desc">If the contract has a defined service level (e.g. 80/20), switch to the Erlang C tab and verify your FTE against the queue model.</div></div></li>
+          <li class="gm-step"><div class="gm-step-num">7</div><div class="gm-step-body"><div class="gm-step-title">Export from Summary tab</div><div class="gm-step-desc">The 📊 Summary tab shows all channels and locations in one table. Screenshot or copy this for your RFP response.</div></div></li>
+        </ul>
+      </div>
+
+    </div><!-- /gm-body -->
+
+    <!-- Footer nav -->
+    <div class="gm-footer">
+      <div class="gm-counter" id="gm-counter">1 of 7</div>
+      <div class="gm-nav">
+        <button class="gm-btn gm-btn-prev" id="gm-btn-prev" onclick="guideNav(-1)">← Back</button>
+        <button class="gm-btn gm-btn-next" id="gm-btn-next" onclick="guideNav(1)">Next →</button>
+      </div>
+    </div>
+
+  </div><!-- /guide-modal -->
+</div><!-- /guide-overlay -->
+
+<!-- Home Warning Modal -->
+<div class="home-modal-overlay" id="homeModal">
+  <div class="home-modal">
+    <div class="home-modal-icon">🏠</div>
+    <div class="home-modal-title">Before you leave</div>
+    <div class="home-modal-body">Please ensure you save your results externally, as this tool does not automatically store or retain any output.</div>
+    <div class="home-modal-actions">
+      <button class="hm-btn hm-btn-ok" onclick="closeHomeModal()">OK — Stay here</button>
+      <button class="hm-btn hm-btn-home" onclick="goHome()">🏠 Go to Home</button>
+    </div>
+  </div>
+</div>
+
+<div class="tabbar">
+  <button class="tab-btn active ph" onclick="switchChan('phone')">📞 Phone <span class="tab-pip" id="pip-phone">—</span></button>
+  <button class="tab-btn ch"        onclick="switchChan('chat')">💬 Chat <span class="tab-pip" id="pip-chat">—</span></button>
+  <button class="tab-btn em"        onclick="switchChan('email')">✉️ Email <span class="tab-pip" id="pip-email">—</span></button>
+  <button class="tab-btn"           onclick="switchChan('summary')">📊 Summary</button>
+  <button class="tab-btn ec"           onclick="switchChan('erlang')" id="tab-erlang"><span class="tab-ec-label">🔢 Erlang C</span> <span class="tab-pip" id="pip-erlang">—</span></button>
+  <div class="tabbar-right" id="vol-mode-bar">
+    <div class="vol-toggle">
+      <button class="vt-btn active" id="vt-equal" onclick="setVolMode('equal')">⚖ Equal volumes</button>
+      <button class="vt-btn" id="vt-split" onclick="setVolMode('split')">↗ Split volumes</button>
+    </div>
+  </div>
+</div>
+
+<div style="flex:1;display:flex;flex-direction:column;min-height:0">
+
+<div class="eq-disclaimer" id="eq-disclaimer">
+  ⚠️ <span><strong>Equal volume mode:</strong> The same volume is being sent to all active locations. Please <strong>deselect any countries not in scope</strong> using the ✓ toggle on each location card — otherwise their FTE will be overcounted.</span>
+</div>
+
+<div class="ch-view active" id="view-phone">
+  <div class="global-strip" id="gs-phone">
+    <span class="gs-label">📞 Phone Inputs</span>
+    <div class="gs-fields">
+      <div class="gs-field">
+        <label>Volume</label>
+        <input class="gs-input" id="g-ph-vol" type="number" value="0" min="0" placeholder="0" oninput="onGlobal('phone','vol',this.value)">
+        <span class="gs-unit">calls /</span>
+        <select class="vol-period-sel" id="vp-phone" onchange="onVolPeriod('phone',this.value)">
+          <option value="monthly" selected>mo</option>
+          <option value="annual">yr</option>
         </select>
-        <div class="rate-note" id="pricingNote" style="margin-top:7px">Calculation model active.</div>
       </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="fg">
-          <div class="fg-label">Number of Agents <span class="hint" id="agHint">10</span></div>
-          <div class="range-row">
-            <input type="range" id="agents" min="1" max="500" value="10" step="1" list="steplist"
-              oninput="document.getElementById('agHint').textContent=this.value;document.getElementById('agVal').textContent=this.value;syncRatios();updateZASupport();calc()">
-            <span class="range-val" id="agVal">10</span>
-            <datalist id="steplist">
-              <option value="25"></option><option value="50"></option><option value="100"></option>
-              <option value="150"></option><option value="200"></option><option value="300"></option><option value="500"></option>
-            </datalist>
-          </div>
-        </div>
-        <div class="fg">
-          <div class="fg-label">Contract Duration</div>
-          <div class="tg">
-            <label><input type="radio" name="contract" value="12" checked onchange="updateZASupport();calc()"><span>1Y</span></label>
-            <label><input type="radio" name="contract" value="24" onchange="updateZASupport();calc()"><span>2Y</span></label>
-            <label><input type="radio" name="contract" value="36" onchange="updateZASupport();calc()"><span>3Y</span></label>
-            <label><input type="radio" name="contract" value="60" onchange="updateZASupport();calc()"><span>5Y</span></label>
-          </div>
-        </div>
+      <span class="gs-arrow">→</span>
+      <div class="gs-field">
+        <label>AHT</label>
+        <input class="gs-input" id="g-ph-aht" type="number" value="0" min="0" placeholder="0" oninput="onGlobal('phone','aht',this.value)">
+        <select class="vol-period-sel" id="ap-phone" onchange="onAhtUnit('phone',this.value)">
+          <option value="seconds" selected>secs</option>
+          <option value="minutes">mins</option>
+        </select>
       </div>
     </div>
-
-    <div class="card">
-      <div class="tabs">
-        <div class="tab active" id="tab-support" onclick="showTab('support',this)">Support Roles</div>
-        <div class="tab" id="tab-seat" onclick="showTab('seat',this)">Seat &amp; IT</div>
-        <div class="tab" id="tab-misc" onclick="showTab('misc',this)">Misc</div>
-        <div class="tab" id="tab-gm" onclick="showTab('gm',this)">GM%</div>
-      </div>
-
-      <div class="tc active" id="tc-support">
-        <p style="font-size:11px;color:var(--k-muted);margin-bottom:14px">Salaries are pre-loaded per location. Ratio auto-calculates headcount. Override in Count if needed.</p>
-        <div style="overflow-x:auto">
-          <table class="rt">
-            <thead>
-              <tr>
-                <th>Role</th>
-                <th>Base<br><span id="rolesLocLabel" style="font-size:8px;font-weight:400">local/mo</span></th>
-                <th>Fringe</th>
-                <th>Total<br><span style="font-size:8px;font-weight:400">local/mo</span></th>
-                <th>Ratio<br><span style="font-size:8px;font-weight:400">1:N</span></th>
-                <th>Auto HC</th>
-                <th>Count</th>
-              </tr>
-            </thead>
-            <tbody id="rolesBody"></tbody>
-            <tfoot>
-              <tr>
-                <td>TOTAL SUPPORT</td>
-                <td></td><td></td><td></td><td></td>
-                <td id="totalAutoHC">—</td>
-                <td id="totalCountHC">—</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
-
-      <div class="tc" id="tc-seat">
-        <div class="sec-hdr">Seat Costs — per head / month</div>
-        <div class="seat-grid" id="seatGrid"></div>
-
-        <div id="silotechRow" style="display:none;margin-top:14px">
-          <div class="sec-hdr">US Only — Silotech</div>
-          <div style="background:var(--k-sky);border:1.5px solid var(--k-blue);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:12px">
-            <span style="font-weight:600;color:var(--k-text)">🔧 Silotech Costs</span>
-            <span style="font-weight:700;color:var(--k-blue);font-family:'JetBrains Mono',monospace" id="silotechAmt">—</span>
-          </div>
-        </div>
-
-        <div class="sec-hdr" style="margin-top:16px">IT Hardware — per head / month</div>
-        <div class="it-grid">
-          <div class="it-item" onclick="toggleIT(this,'pc')">
-            <input type="checkbox" data-key="pc" style="display:none">
-            <div class="it-check">✓</div>
-            <div class="it-body"><div class="it-name">🖥️ PC</div><div class="it-price">$40 / head</div></div>
-          </div>
-          <div class="it-item" onclick="toggleIT(this,'monitor')">
-            <input type="checkbox" data-key="monitor" style="display:none">
-            <div class="it-check">✓</div>
-            <div class="it-body"><div class="it-name">🖥️ 2nd Monitor</div><div class="it-price">$4.50 / head</div></div>
-          </div>
-          <div class="it-item" onclick="toggleIT(this,'headset')">
-            <input type="checkbox" data-key="headset" style="display:none">
-            <div class="it-check">✓</div>
-            <div class="it-body"><div class="it-name">🎧 Headset</div><div class="it-price">$1.25 / head</div></div>
-          </div>
-          <div class="it-item" onclick="toggleIT(this,'uniphore')">
-            <input type="checkbox" data-key="uniphore" style="display:none">
-            <div class="it-check">✓</div>
-            <div class="it-body"><div class="it-name">🤖 Uniphore</div><div class="it-price">$42 / head</div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="tc" id="tc-misc">
-        <p style="font-size:11px;color:var(--k-muted);margin-bottom:14px">One-time costs spread across contract term. Hiring costs shown for India only.</p>
-        <div class="fg"><div class="fg-label">Travel Cost (total USD)</div><input type="number" id="mTravel" min="0" placeholder="0" oninput="calc()"></div>
-        <div class="fg"><div class="fg-label">Compliance Costs (total USD)</div><input type="number" id="mCompliance" min="0" placeholder="0" oninput="calc()"></div>
-        <div class="fg"><div class="fg-label">Implementation Charges (total USD)</div><input type="number" id="mImpl" min="0" placeholder="0" oninput="calc()"></div>
-        
-        <div id="hiringRow" style="display:none;margin-top:14px">
-          <div class="sec-hdr">India Only — Hiring Costs</div>
-          <p style="font-size:11px;color:var(--k-muted);margin-bottom:8px">1 month base wage (excl. fringe) per head, amortised over contract term.</p>
-          <div style="background:var(--k-sky);border:1.5px solid var(--k-blue);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:12px">
-            <span style="font-weight:600;color:var(--k-text)">👥 Hiring Cost (amortised/mo)</span>
-            <span style="font-weight:700;color:var(--k-blue);font-family:'JetBrains Mono',monospace" id="hiringAmt">—</span>
-          </div>
-        </div>
-
-        <div class="fg" id="zaSupportStaffRow" style="display:none;margin-top:14px">
-          <div class="sec-hdr">South Africa Only — Support Staff</div>
-          <div class="fg-label">Support Staff Costs (total USD)</div>
-          <input type="number" id="mSupportStaff" min="0" placeholder="0" oninput="zaSupportDirty=true;calc()">
-        </div>
-      </div>
-
-      <div class="tc" id="tc-gm">
-        <p style="font-size:11px;color:var(--k-muted);margin-bottom:14px">Formula: <strong style="color:var(--k-text)">Monthly Client TCO = Total Cost ÷ (1 − GM%)</strong></p>
-        <div class="fg">
-          <div class="gm-label-row">GM% &nbsp;<strong>(EBIT + SG&amp;A)</strong></div>
-          <input type="number" id="gmPct" min="0" max="99.9" step="0.1" placeholder="e.g. 25" oninput="calc()">
-        </div>
-        <div class="gm-breakdown" id="gmBox">
-          <div class="gm-row"><span>Total cost without GM%</span><span class="gv" id="gmBase">—</span></div>
-          <div class="gm-row"><span>GM amount</span><span class="gv" id="gmAmt">—</span></div>
-          <div class="gm-row"><span>Monthly Client TCO</span><span class="gv" id="gmPrice">—</span></div>
-        </div>
+    <span class="gs-info" id="gs-ph-hint"></span>
+  </div>
+  <div class="split-pct-strip" id="sps-phone">
+    <div class="sps-top">
+      <span class="sps-label">↗ Split — enter % of total volume per location (must total 100%)</span>
+      <div class="sps-fields" id="sps-phone-fields"></div>
+      <div class="sps-total">
+        <span class="sps-total-label">Total:</span>
+        <span class="sps-total-val ok" id="sps-phone-total">0%</span>
       </div>
     </div>
-
+    <div class="sps-bar" id="sps-phone-bar" style="margin-bottom:0"></div>
+    <div class="sps-disclaimer" id="sps-phone-disc">⚠ Split exceeds 100% — please adjust percentages so they sum to exactly 100%.</div>
   </div>
 
-  <div class="summary">
-    <div class="card">
-      <div class="card-title"><span class="dot"></span>Cost Summary</div>
-
-      <div class="row"><span>Location / Tier</span><span class="v" id="sLoc">US · T1</span></div>
-      <div class="row"><span>Pricing Model</span><span class="v" id="sPricing">—</span></div>
-      <div class="row"><span>Headcount</span><span class="v" id="sAgents">—</span></div>
-      <div class="row"><span>Contract</span><span class="v" id="sContract">—</span></div>
-
-      <div class="sep"></div>
-
-      <div class="row hi"><span>Agent wages (incl. fringe)</span><span class="v" id="sWage">—</span></div>
-      <div class="row"><span>Support roles</span><span class="v" id="sRoles">—</span></div>
-      <div class="row"><span>Seat costs</span><span class="v" id="sSeat">—</span></div>
-      <div class="row"><span>IT costs</span><span class="v" id="sIT">—</span></div>
-      <div class="row"><span>Misc (amortised)</span><span class="v" id="sMisc">—</span></div>
-
-      <div class="sep"></div>
-
-      <div class="row"><span>Total cost without GM%</span><span class="v" id="sSub">—</span></div>
-      <div class="row hi"><span>GM add-on</span><span class="v" id="sGM">—</span></div>
-      <div class="row" style="border-bottom:none">
-        <span>Contribution Margin <span class="cm-note" id="cmNote"></span></span>
-        <span class="v" id="sCM">—</span>
-      </div>
-
-      <div class="alert" id="cmAlert"></div>
-
-      <div class="tco-box">
-        <div class="tco-label">Monthly Client TCO</div>
-        <div class="tco-amount" id="tTotal">—</div>
-        <div class="tco-sub" id="tSub">no GM applied</div>
-      </div>
-
-      <button class="btn-primary" onclick="genQuote()">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke="white" stroke-width="1.5"/><line x1="4.5" y1="5" x2="9.5" y2="5" stroke="white" stroke-width="1.2"/><line x1="4.5" y1="7.5" x2="9.5" y2="7.5" stroke="white" stroke-width="1.2"/><line x1="4.5" y1="10" x2="7.5" y2="10" stroke="white" stroke-width="1.2"/></svg>
-        Generate Quote
-      </button>
-    </div>
-
-    <div class="card">
-      <div class="card-title"><span class="dot"></span>Per-Agent Breakdown</div>
-      <div class="metric-grid">
-        <div class="metric"><div class="m-label">Agent wage</div><div class="m-val" id="paW">—</div></div>
-        <div class="metric"><div class="m-label">Support roles</div><div class="m-val" id="paR">—</div></div>
-        <div class="metric"><div class="m-label">Seat cost</div><div class="m-val" id="paS">—</div></div>
-        <div class="metric"><div class="m-label">IT cost</div><div class="m-val" id="paIT">—</div></div>
-        <div class="metric" style="grid-column:1/-1"><div class="m-label">Misc / Silotech / Hiring</div><div class="m-val" id="paM">—</div></div>
-        <div class="metric hi" style="grid-column:1/-1"><div class="m-label">Price per FTE / mo</div><div class="m-val" id="paFTE">—</div></div>
-      </div>
-      <div class="model-result">
-        <span class="mr-label" id="breakdownLabel">Price per FTE</span>
-        <span class="mr-val" id="paT">—</span>
-      </div>
-    </div>
+  <!-- HOOP Panel: Phone -->
+  <div class="hoop-bar">
+    <button class="hoop-toggle" onclick="toggleHoop('phone')" id="hoop-toggle-phone">
+      <span class="hoop-toggle-icon" id="hoop-icon-phone">▶</span>
+      🕐 Hours of Operation <span class="hoop-optional-badge">Optional</span>
+    </button>
+    <button class="hoop-247-btn" onclick="setHoop247('phone')" title="Set 24/7 coverage">24 / 7</button>
+    <button class="hoop-clear-btn" onclick="clearHoop('phone')" title="Clear all HOOP data" id="hoop-clear-phone" style="display:none">✕ Clear</button>
+    <span class="hoop-note" id="hoop-note-phone"></span>
   </div>
+  <div class="hoop-panel" id="hoop-panel-phone" style="display:none">
+    <div class="hoop-section">
+      <div class="hoop-section-title">Days of Operation</div>
+      <div class="hoop-days" id="hoop-days-phone">
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="phone" data-day="Mon" checked onchange="onHoopChange('phone')"><span>Mon</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="phone" data-day="Tue" checked onchange="onHoopChange('phone')"><span>Tue</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="phone" data-day="Wed" checked onchange="onHoopChange('phone')"><span>Wed</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="phone" data-day="Thu" checked onchange="onHoopChange('phone')"><span>Thu</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="phone" data-day="Fri" checked onchange="onHoopChange('phone')"><span>Fri</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="phone" data-day="Sat" onchange="onHoopChange('phone')"><span>Sat</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="phone" data-day="Sun" onchange="onHoopChange('phone')"><span>Sun</span></label>
+      </div>
+    </div>
+    <div class="hoop-divider"></div>
+    <div class="hoop-section">
+      <div class="hoop-section-title">Operating Hours <span class="hoop-tz-note">(specify timezone)</span></div>
+      <div class="hoop-hours-row">
+        <input class="hoop-time-input" type="time" id="hoop-open-phone" value="09:00" onchange="onHoopChange('phone')">
+        <span class="hoop-to">to</span>
+        <input class="hoop-time-input" type="time" id="hoop-close-phone" value="18:00" onchange="onHoopChange('phone')">
+        <select class="hoop-tz-sel" id="hoop-tz-phone" onchange="onHoopChange('phone')">
+          <option value="CST">CST</option><option value="EST">EST</option><option value="PST">PST</option>
+          <option value="GMT">GMT</option><option value="IST">IST</option><option value="SAST">SAST</option>
+          <option value="PHT">PHT</option><option value="AEST">AEST</option><option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="hoop-divider"></div>
+    <div class="hoop-section">
+      <div class="hoop-section-title">Volume Distribution <span class="hoop-tz-note">(optional — for shift planning reference)</span></div>
+      <div class="hoop-splits-grid">
+        <div class="hoop-split-item">
+          <label class="hoop-split-lbl">Weekday %</label>
+          <div class="hoop-split-row">
+            <input class="hoop-split-input" type="number" id="hoop-wkday-phone" value="" min="0" max="100" placeholder="e.g. 80" onchange="onHoopSplit('phone')">
+            <span class="hoop-split-sym">%</span>
+          </div>
+        </div>
+        <div class="hoop-split-item">
+          <label class="hoop-split-lbl">Weekend %</label>
+          <div class="hoop-split-row">
+            <input class="hoop-split-input" type="number" id="hoop-wkend-phone" value="" min="0" max="100" placeholder="e.g. 20" onchange="onHoopSplit('phone')">
+            <span class="hoop-split-sym">%</span>
+          </div>
+        </div>
+        <div class="hoop-split-item">
+          <label class="hoop-split-lbl">Peak hours %</label>
+          <div class="hoop-split-row">
+            <input class="hoop-split-input" type="number" id="hoop-peak-phone" value="" min="0" max="100" placeholder="e.g. 80" onchange="onHoopSplit('phone')">
+            <span class="hoop-split-sym">%</span>
+          </div>
+        </div>
+        <div class="hoop-split-item">
+          <label class="hoop-split-lbl">Off-peak %</label>
+          <div class="hoop-split-row">
+            <input class="hoop-split-input" type="number" id="hoop-offpeak-phone" value="" min="0" max="100" placeholder="e.g. 20" onchange="onHoopSplit('phone')">
+            <span class="hoop-split-sym">%</span>
+          </div>
+        </div>
+      </div>
+      <div class="hoop-split-warn" id="hoop-split-warn-phone" style="display:none">⚠ Weekday + Weekend should total 100%</div>
+      <div class="hoop-split-warn" id="hoop-peak-warn-phone" style="display:none">⚠ Peak + Off-peak should total 100%</div>
+      <div class="hoop-247-nudge" id="hoop-247-nudge-phone">⚡ <span>You've selected <strong>24/7 coverage</strong> — please enter <strong>Weekday %</strong> and <strong>Weekend %</strong> distribution above so the tool can correctly calculate shift bands and unique headcount.</span></div>
+    </div>
+    <div class="hoop-divider"></div>
+    <div class="hoop-section hoop-notes-section">
+      <div class="hoop-section-title">Notes <span class="hoop-tz-note">(free text — SLAs, exceptions, seasonal peaks…)</span></div>
+      <textarea class="hoop-notes-input" id="hoop-notes-phone" placeholder="e.g. Closed public holidays · Peak Nov–Dec · SLA: 80% answered in 20s" rows="2"></textarea>
+    </div>
+    <div class="hoop-summary" id="hoop-summary-phone"></div>
+  </div>
+  <div class="cards-scroll" id="phone-rows"></div>
+</div>
+
+<div class="ch-view" id="view-chat">
+  <div class="global-strip" id="gs-chat">
+    <span class="gs-label">💬 Chat Inputs</span>
+    <div class="gs-fields">
+      <div class="gs-field">
+        <label>Volume</label>
+        <input class="gs-input" id="g-ch-vol" type="number" value="0" min="0" placeholder="0" oninput="onGlobal('chat','vol',this.value)">
+        <span class="gs-unit">chats /</span>
+        <select class="vol-period-sel" id="vp-chat" onchange="onVolPeriod('chat',this.value)">
+          <option value="monthly" selected>mo</option>
+          <option value="annual">yr</option>
+        </select>
+      </div>
+      <span class="gs-arrow">→</span>
+      <div class="gs-field">
+        <label>AHT</label>
+        <input class="gs-input" id="g-ch-aht" type="number" value="0" min="0" placeholder="0" oninput="onGlobal('chat','aht',this.value)">
+        <select class="vol-period-sel" id="ap-chat" onchange="onAhtUnit('chat',this.value)">
+          <option value="minutes" selected>mins</option>
+          <option value="seconds">secs</option>
+        </select>
+      </div>
+      <div class="gs-field">
+        <label>Concurrency <span class="tt" data-t="Max simultaneous chats per agent">?</span></label>
+        <input class="gs-input" id="g-ch-conc" type="number" value="1.2" min="1" max="8" step="0.1" style="width:70px" oninput="onGlobal('chat','conc',this.value)">
+        <span class="gs-unit">chats</span>
+      </div>
+    </div>
+    <span class="gs-info" id="gs-ch-hint"></span>
+  </div>
+  <div class="split-pct-strip" id="sps-chat">
+    <div class="sps-top">
+      <span class="sps-label">↗ Split — enter % of total volume per location (must total 100%)</span>
+      <div class="sps-fields" id="sps-chat-fields"></div>
+      <div class="sps-total"><span class="sps-total-label">Total:</span><span class="sps-total-val ok" id="sps-chat-total">0%</span></div>
+    </div>
+    <div class="sps-bar" id="sps-chat-bar"></div>
+    <div class="sps-disclaimer" id="sps-chat-disc">⚠ Split exceeds 100% — please adjust percentages so they sum to exactly 100%.</div>
+  </div>
+
+  <!-- HOOP Panel: Chat -->
+  <div class="hoop-bar">
+    <button class="hoop-toggle" onclick="toggleHoop('chat')" id="hoop-toggle-chat">
+      <span class="hoop-toggle-icon" id="hoop-icon-chat">▶</span>
+      🕐 Hours of Operation <span class="hoop-optional-badge">Optional</span>
+    </button>
+    <button class="hoop-247-btn" onclick="setHoop247('chat')" title="Set 24/7 coverage">24 / 7</button>
+    <button class="hoop-clear-btn" onclick="clearHoop('chat')" title="Clear all HOOP data" id="hoop-clear-chat" style="display:none">✕ Clear</button>
+    <span class="hoop-note" id="hoop-note-chat"></span>
+  </div>
+  <div class="hoop-panel" id="hoop-panel-chat" style="display:none">
+    <div class="hoop-section">
+      <div class="hoop-section-title">Days of Operation</div>
+      <div class="hoop-days" id="hoop-days-chat">
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="chat" data-day="Mon" checked onchange="onHoopChange('chat')"><span>Mon</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="chat" data-day="Tue" checked onchange="onHoopChange('chat')"><span>Tue</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="chat" data-day="Wed" checked onchange="onHoopChange('chat')"><span>Wed</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="chat" data-day="Thu" checked onchange="onHoopChange('chat')"><span>Thu</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="chat" data-day="Fri" checked onchange="onHoopChange('chat')"><span>Fri</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="chat" data-day="Sat" onchange="onHoopChange('chat')"><span>Sat</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="chat" data-day="Sun" onchange="onHoopChange('chat')"><span>Sun</span></label>
+      </div>
+    </div>
+    <div class="hoop-divider"></div>
+    <div class="hoop-section">
+      <div class="hoop-section-title">Operating Hours <span class="hoop-tz-note">(specify timezone)</span></div>
+      <div class="hoop-hours-row">
+        <input class="hoop-time-input" type="time" id="hoop-open-chat" value="09:00" onchange="onHoopChange('chat')">
+        <span class="hoop-to">to</span>
+        <input class="hoop-time-input" type="time" id="hoop-close-chat" value="18:00" onchange="onHoopChange('chat')">
+        <select class="hoop-tz-sel" id="hoop-tz-chat" onchange="onHoopChange('chat')">
+          <option value="CST">CST</option><option value="EST">EST</option><option value="PST">PST</option>
+          <option value="GMT">GMT</option><option value="IST">IST</option><option value="SAST">SAST</option>
+          <option value="PHT">PHT</option><option value="AEST">AEST</option><option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="hoop-divider"></div>
+    <div class="hoop-section">
+      <div class="hoop-section-title">Volume Distribution <span class="hoop-tz-note">(optional — for shift planning reference)</span></div>
+      <div class="hoop-splits-grid">
+        <div class="hoop-split-item">
+          <label class="hoop-split-lbl">Weekday %</label>
+          <div class="hoop-split-row">
+            <input class="hoop-split-input" type="number" id="hoop-wkday-chat" value="" min="0" max="100" placeholder="e.g. 80" onchange="onHoopSplit('chat')">
+            <span class="hoop-split-sym">%</span>
+          </div>
+        </div>
+        <div class="hoop-split-item">
+          <label class="hoop-split-lbl">Weekend %</label>
+          <div class="hoop-split-row">
+            <input class="hoop-split-input" type="number" id="hoop-wkend-chat" value="" min="0" max="100" placeholder="e.g. 20" onchange="onHoopSplit('chat')">
+            <span class="hoop-split-sym">%</span>
+          </div>
+        </div>
+        <div class="hoop-split-item">
+          <label class="hoop-split-lbl">Peak hours %</label>
+          <div class="hoop-split-row">
+            <input class="hoop-split-input" type="number" id="hoop-peak-chat" value="" min="0" max="100" placeholder="e.g. 80" onchange="onHoopSplit('chat')">
+            <span class="hoop-split-sym">%</span>
+          </div>
+        </div>
+        <div class="hoop-split-item">
+          <label class="hoop-split-lbl">Off-peak %</label>
+          <div class="hoop-split-row">
+            <input class="hoop-split-input" type="number" id="hoop-offpeak-chat" value="" min="0" max="100" placeholder="e.g. 20" onchange="onHoopSplit('chat')">
+            <span class="hoop-split-sym">%</span>
+          </div>
+        </div>
+      </div>
+      <div class="hoop-split-warn" id="hoop-split-warn-chat" style="display:none">⚠ Weekday + Weekend should total 100%</div>
+      <div class="hoop-split-warn" id="hoop-peak-warn-chat" style="display:none">⚠ Peak + Off-peak should total 100%</div>
+      <div class="hoop-247-nudge" id="hoop-247-nudge-chat">⚡ <span>You've selected <strong>24/7 coverage</strong> — please enter <strong>Weekday %</strong> and <strong>Weekend %</strong> distribution above so the tool can correctly calculate shift bands and unique headcount.</span></div>
+    </div>
+    <div class="hoop-divider"></div>
+    <div class="hoop-section hoop-notes-section">
+      <div class="hoop-section-title">Notes <span class="hoop-tz-note">(free text — SLAs, exceptions, seasonal peaks…)</span></div>
+      <textarea class="hoop-notes-input" id="hoop-notes-chat" placeholder="e.g. 24/7 chat support · Peak Mon mornings · SLA: &lt;30s first response" rows="2"></textarea>
+    </div>
+    <div class="hoop-summary" id="hoop-summary-chat"></div>
+  </div>
+  <div class="cards-scroll" id="chat-rows"></div>
+</div>
+
+<div class="ch-view" id="view-email">
+  <div class="global-strip" id="gs-email">
+    <span class="gs-label">✉️ Email Inputs</span>
+    <div class="gs-fields">
+      <div class="gs-field">
+        <label>Volume</label>
+        <input class="gs-input" id="g-em-vol" type="number" value="0" min="0" placeholder="0" oninput="onGlobal('email','vol',this.value)">
+        <span class="gs-unit">emails /</span>
+        <select class="vol-period-sel" id="vp-email" onchange="onVolPeriod('email',this.value)">
+          <option value="monthly" selected>mo</option>
+          <option value="annual">yr</option>
+        </select>
+      </div>
+      <span class="gs-arrow">→</span>
+      <div class="gs-field">
+        <label>AHT</label>
+        <input class="gs-input" id="g-em-aht" type="number" value="0" min="0" placeholder="0" oninput="onGlobal('email','aht',this.value)">
+        <select class="vol-period-sel" id="ap-email" onchange="onAhtUnit('email',this.value)">
+          <option value="minutes" selected>mins</option>
+          <option value="seconds">secs</option>
+        </select>
+      </div>
+      <div class="gs-field">
+        <label>% Need Response <span class="tt" data-t="Emails that require an agent reply\n(excludes FYI / CC-only)">?</span></label>
+        <input class="gs-input" id="g-em-pct" type="number" value="85" min="1" max="100" style="width:80px" oninput="onGlobal('email','pct',this.value)">
+        <span class="gs-unit">%</span>
+      </div>
+      <div class="gs-field">
+        <label>Monthly Backlog</label>
+        <input class="gs-input" id="g-em-backlog" type="number" value="0" min="0" oninput="onGlobal('email','backlog',this.value)">
+        <span class="gs-unit">emails</span>
+      </div>
+    </div>
+    <span class="gs-info" id="gs-em-hint"></span>
+  </div>
+  <div class="split-pct-strip" id="sps-email">
+    <div class="sps-top">
+      <span class="sps-label">↗ Split — enter % of total volume per location (must total 100%)</span>
+      <div class="sps-fields" id="sps-email-fields"></div>
+      <div class="sps-total"><span class="sps-total-label">Total:</span><span class="sps-total-val ok" id="sps-email-total">0%</span></div>
+    </div>
+    <div class="sps-bar" id="sps-email-bar"></div>
+    <div class="sps-disclaimer" id="sps-email-disc">⚠ Split exceeds 100% — please adjust percentages so they sum to exactly 100%.</div>
+  </div>
+
+  <!-- HOOP Panel: Email -->
+  <div class="hoop-bar">
+    <button class="hoop-toggle" onclick="toggleHoop('email')" id="hoop-toggle-email">
+      <span class="hoop-toggle-icon" id="hoop-icon-email">▶</span>
+      🕐 Hours of Operation <span class="hoop-optional-badge">Optional</span>
+    </button>
+    <button class="hoop-247-btn" onclick="setHoop247('email')" title="Set 24/7 coverage">24 / 7</button>
+    <button class="hoop-clear-btn" onclick="clearHoop('email')" title="Clear all HOOP data" id="hoop-clear-email" style="display:none">✕ Clear</button>
+    <span class="hoop-note" id="hoop-note-email"></span>
+  </div>
+  <div class="hoop-panel" id="hoop-panel-email" style="display:none">
+    <div class="hoop-section">
+      <div class="hoop-section-title">Days of Operation</div>
+      <div class="hoop-days" id="hoop-days-email">
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="email" data-day="Mon" checked onchange="onHoopChange('email')"><span>Mon</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="email" data-day="Tue" checked onchange="onHoopChange('email')"><span>Tue</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="email" data-day="Wed" checked onchange="onHoopChange('email')"><span>Wed</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="email" data-day="Thu" checked onchange="onHoopChange('email')"><span>Thu</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="email" data-day="Fri" checked onchange="onHoopChange('email')"><span>Fri</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="email" data-day="Sat" onchange="onHoopChange('email')"><span>Sat</span></label>
+        <label class="hoop-day-lbl"><input type="checkbox" class="hoop-day-cb" data-ch="email" data-day="Sun" onchange="onHoopChange('email')"><span>Sun</span></label>
+      </div>
+    </div>
+    <div class="hoop-divider"></div>
+    <div class="hoop-section">
+      <div class="hoop-section-title">Operating Hours <span class="hoop-tz-note">(specify timezone)</span></div>
+      <div class="hoop-hours-row">
+        <input class="hoop-time-input" type="time" id="hoop-open-email" value="09:00" onchange="onHoopChange('email')">
+        <span class="hoop-to">to</span>
+        <input class="hoop-time-input" type="time" id="hoop-close-email" value="18:00" onchange="onHoopChange('email')">
+        <select class="hoop-tz-sel" id="hoop-tz-email" onchange="onHoopChange('email')">
+          <option value="CST">CST</option><option value="EST">EST</option><option value="PST">PST</option>
+          <option value="GMT">GMT</option><option value="IST">IST</option><option value="SAST">SAST</option>
+          <option value="PHT">PHT</option><option value="AEST">AEST</option><option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="hoop-divider"></div>
+    <div class="hoop-section">
+      <div class="hoop-section-title">Volume Distribution <span class="hoop-tz-note">(optional — for shift planning reference)</span></div>
+      <div class="hoop-splits-grid">
+        <div class="hoop-split-item">
+          <label class="hoop-split-lbl">Weekday %</label>
+          <div class="hoop-split-row">
+            <input class="hoop-split-input" type="number" id="hoop-wkday-email" value="" min="0" max="100" placeholder="e.g. 80" onchange="onHoopSplit('email')">
+            <span class="hoop-split-sym">%</span>
+          </div>
+        </div>
+        <div class="hoop-split-item">
+          <label class="hoop-split-lbl">Weekend %</label>
+          <div class="hoop-split-row">
+            <input class="hoop-split-input" type="number" id="hoop-wkend-email" value="" min="0" max="100" placeholder="e.g. 20" onchange="onHoopSplit('email')">
+            <span class="hoop-split-sym">%</span>
+          </div>
+        </div>
+        <div class="hoop-split-item">
+          <label class="hoop-split-lbl">Peak hours %</label>
+          <div class="hoop-split-row">
+            <input class="hoop-split-input" type="number" id="hoop-peak-email" value="" min="0" max="100" placeholder="e.g. 80" onchange="onHoopSplit('email')">
+            <span class="hoop-split-sym">%</span>
+          </div>
+        </div>
+        <div class="hoop-split-item">
+          <label class="hoop-split-lbl">Off-peak %</label>
+          <div class="hoop-split-row">
+            <input class="hoop-split-input" type="number" id="hoop-offpeak-email" value="" min="0" max="100" placeholder="e.g. 20" onchange="onHoopSplit('email')">
+            <span class="hoop-split-sym">%</span>
+          </div>
+        </div>
+      </div>
+      <div class="hoop-split-warn" id="hoop-split-warn-email" style="display:none">⚠ Weekday + Weekend should total 100%</div>
+      <div class="hoop-split-warn" id="hoop-peak-warn-email" style="display:none">⚠ Peak + Off-peak should total 100%</div>
+      <div class="hoop-247-nudge" id="hoop-247-nudge-email">⚡ <span>You've selected <strong>24/7 coverage</strong> — please enter <strong>Weekday %</strong> and <strong>Weekend %</strong> distribution above so the tool can correctly calculate shift bands and unique headcount.</span></div>
+    </div>
+    <div class="hoop-divider"></div>
+    <div class="hoop-section hoop-notes-section">
+      <div class="hoop-section-title">Notes <span class="hoop-tz-note">(free text — SLAs, exceptions, seasonal peaks…)</span></div>
+      <textarea class="hoop-notes-input" id="hoop-notes-email" placeholder="e.g. Mon–Fri only · SLA: respond within 24hrs · Higher volume Q4" rows="2"></textarea>
+    </div>
+    <div class="hoop-summary" id="hoop-summary-email"></div>
+  </div>
+  <div class="cards-scroll" id="email-rows"></div>
+</div>
+
+<div class="summary-view" id="view-summary">
+  <div class="sum-heading">Summary Report</div>
+  <div class="sum-sub">All channels · All locations · Workload formula</div>
+  <div class="sum-cards" id="sv-loc-cards"></div>
+  <div class="sum-table-wrap">
+    <table class="sum-table"><thead><tr>
+      <th>Channel</th><th>Location</th><th>Country</th><th>Monthly Vol</th>
+      <th>Workload hrs</th><th>Attendance hrs</th><th>FTE</th><th>FTE hrs/mo</th><th>Shrinkage</th>
+    </tr></thead><tbody id="sv-tbody"></tbody></table>
   </div>
 </div>
 
-<div id="qModal">
-  <div class="mi">
-    <button class="cbtn" onclick="document.getElementById('qModal').style.display='none'">✕</button>
-    <div class="mi-header">
-      <h2>Quote Summary</h2>
-      <span class="badge">Indicative</span>
+<div class="summary-view" id="view-erlang" style="padding:0;overflow-y:auto">
+  <div class="global-strip" id="gs-erlang" style="flex-wrap:wrap;gap:14px">
+    <span class="gs-label">🔢 Erlang C Inputs</span>
+    <div class="gs-fields" style="flex-wrap:wrap;gap:14px">
+      <div class="gs-field">
+        <label>Channel</label>
+        <select class="vol-period-sel" id="erlang-channel" onchange="onErlangChannel(this.value)" style="font-size:12px;padding:5px 24px 5px 9px">
+          <option value="phone">📞 Phone</option>
+          <option value="chat">💬 Chat</option>
+          <option value="email">✉️ Email</option>
+        </select>
+      </div>
+      <div class="gs-field">
+        <label>Interval</label>
+        <select class="vol-period-sel" id="erlang-interval" onchange="calcErlang()" style="font-size:12px;padding:5px 24px 5px 9px">
+          <option value="30">30 min</option>
+          <option value="60" selected>60 min</option>
+        </select>
+      </div>
+      <div class="gs-field">
+        <label>SL Target</label>
+        <input class="gs-input" id="erlang-sl" type="number" value="80" min="1" max="99" style="width:72px" oninput="calcErlang()">
+        <span class="gs-unit">% in</span>
+        <input class="gs-input" id="erlang-tt" type="number" value="20" min="1" style="width:72px" oninput="calcErlang()">
+        <span class="gs-unit">secs</span>
+      </div>
+      <div class="gs-field">
+        <label>Occ Cap <span class="tt" data-t="Occupancy is calculated by Erlang C (A/N). This cap is a safety ceiling — if the model's natural occupancy exceeds this, more agents are added until it drops below. Lower = more agents but less burnout risk.">?</span></label>
+        <input class="gs-input" id="erlang-maxocc" type="number" value="80" min="50" max="99" style="width:72px" oninput="calcErlang()">
+        <span class="gs-unit">% max</span>
+      </div>
     </div>
-    <div class="mi-sub">Not a final invoice — for discussion purposes only</div>
-    <div id="qContent"></div>
-    <div class="mi-actions">
-      <button class="btn-copy" onclick="copyQ()">📋 Copy to Clipboard</button>
-      <button class="btn-done" onclick="document.getElementById('qModal').style.display='none'">Done</button>
+    <span class="gs-info" id="gs-erlang-hint" style="width:100%"></span>
+  </div>
+  <div style="padding:20px 24px;flex:1">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <div style="font-size:13px;font-weight:700;color:var(--erlang-c)">Erlang C — Agent Requirements</div>
+      <div style="font-size:11px;color:var(--erlang-c);opacity:.65;font-style:italic">Queue-based staffing model with service level constraint</div>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap" id="erlang-cards"></div>
+    <div style="margin-top:20px;padding:14px 18px;border-radius:10px;font-size:11px;line-height:1.65" class="ec-info-box">
+      <strong style="color:var(--erlang-c)">ℹ️ About Erlang C:</strong> <span style="color:var(--ink2)">Unlike simple workload sizing, Erlang C models random call arrivals and queue wait times. It calculates the minimum agents needed so that <em>X%</em> of contacts are answered within <em>Y seconds</em>. <strong>Occupancy (A/N) is a calculated output</strong> — the model adds agents until both the SL target and the occupancy cap are satisfied. Raising the cap allows fewer agents but higher burnout risk; lowering it forces more agents. Results are typically 10–30% higher than workload FTE. <strong>Note:</strong> Erlang C applies to Phone and Chat (queued channels). Email uses a workload + SL-buffer approach.</span>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <div class="footer-seg">
+    <div class="fs-label">Total FTE</div>
+    <div class="fs-val white" id="ft-total-hc">—</div>
+    <div class="fs-sub">All channels · All locations</div>
+  </div>
+  <div class="footer-seg">
+    <div class="fs-label">By Channel</div>
+    <div class="footer-ch">
+      <div class="fch"><div class="fch-lbl">📞 Phone</div><div class="fch-val" id="ft-ch-phone">—</div></div>
+      <div class="fch"><div class="fch-lbl">💬 Chat</div><div class="fch-val" id="ft-ch-chat">—</div></div>
+      <div class="fch"><div class="fch-lbl">✉️ Email</div><div class="fch-val" id="ft-ch-email">—</div></div>
     </div>
   </div>
 </div>
 
 <script>
-// ── Constants ──────────────────────────────────────────────────────────────────
+/* ════════════════════════════════════════════════
+   CONSTANTS
+════════════════════════════════════════════════ */
+/*
+  Country attendance hours per FTE per month — authoritative pre-set values.
+  These already account for working pattern, paid breaks, country-mandated
+  leaves and public holidays. Logic must NOT re-derive these from shift hours.
+  ─────────────────────────────────────────────────────────────────
+  ZA : 195 hrs/mo  (5d/wk · 10h shift · 9h att/day · att = paid hrs here)
+  US : 153 hrs/mo  (5d/wk ·  8h shift · 7.5h att/day · after US holidays/leave)
+  IN : 148 hrs/mo  (5d/wk ·  9h shift · 8h att/day   · after IN holidays/leave)
+  PH : 142.5 hrs/mo(5d/wk ·  9h shift · 7.5h att/day · after PH holidays/leave)
+  UK : 137 hrs/mo  (5d/wk ·  8h shift · 7.5h att/day · after UK holidays/leave)
 
-const FX = { USD:1, GBP:1.27, ZAR:0.055, PHP:0.017, INR:0.012 };
+  Terminology:
+    Shift hrs      = total time on site (all breaks included)
+    Attendance hrs = shift hrs − unpaid breaks only (paid breaks count as attendance)
+    Productive hrs = attendance hrs × (1 − utilisation%)   [in-chair, excl. aux]
+    Transaction hrs= productive hrs × occupancy%           [live contact-handling time]
 
-const CURRENCY_MAP = {
-  USD: { symbol:'$',  rate:1.00 },
-  EUR: { symbol:'€',  rate:0.92 },
-  GBP: { symbol:'£',  rate:0.79 },
+  FTE formula denominator = ATTENDANCE hrs/mo (pre-set per country above).
+  Utilisation & availability shrinkage are applied on the workload side.
+*/
+const CTRY_PROFILE = {
+  ZA: { name:'South Africa',  flag:'🇿🇦', daysPerWeek:5, shiftHrs:10, attHrs:9.0, paidBreak:1.0, unpaidBreak:0,   attHrsPerMonth:195   },
+  IN: { name:'India',         flag:'🇮🇳', daysPerWeek:5, shiftHrs:9,  attHrs:8.0, paidBreak:1.0, unpaidBreak:0,   attHrsPerMonth:148   },
+  PH: { name:'Philippines',   flag:'🇵🇭', daysPerWeek:5, shiftHrs:9,  attHrs:7.5, paidBreak:0.5, unpaidBreak:1.0, attHrsPerMonth:142.5 },
+  UK: { name:'United Kingdom',flag:'🇬🇧', daysPerWeek:5, shiftHrs:8,  attHrs:7.5, paidBreak:0.5, unpaidBreak:0,   attHrsPerMonth:137   },
+  US: { name:'United States', flag:'🇺🇸', daysPerWeek:5, shiftHrs:8,  attHrs:7.5, paidBreak:0.5, unpaidBreak:0,   attHrsPerMonth:153   },
 };
 
-const AGENT_RATES = {
-  US: { type:'hourly',  t1:17.00, currency:'USD', symbol:'$' },
-  UK: { type:'hourly',  t1:13.00, currency:'GBP', symbol:'£' },
-  ZA: { type:'monthly', t1:7300,  currency:'ZAR', symbol:'R' },
-  PH: { type:'monthly', t1:21000, currency:'PHP', symbol:'₱' },
-  IN: { type:'monthly', t1:42000, currency:'INR', symbol:'₹' },
+// Always read attendance hrs/month directly from the pre-set profile value
+const CTRY_FTE  = Object.fromEntries(Object.entries(CTRY_PROFILE).map(([c,p])=>[c, p.attHrsPerMonth]));
+// ZA→195, IN→148, PH→142.5, UK→137, US→153
+const CTRY_NAME = Object.fromEntries(Object.entries(CTRY_PROFILE).map(([c,p])=>[c, p.name]));
+const CTRY_FLAG = Object.fromEntries(Object.entries(CTRY_PROFILE).map(([c,p])=>[c, p.flag]));
+const MIN_FTE_PER_SHIFT = 3; // no shift/band may be staffed below this
+const LOC_COLORS = ['c1','c2','c3','c4','c5'];
+const LOC_PALETTE = ['#0057FF','#ea580c','#0f766e','#0041CC','#00B87C'];
+
+const LOC = [
+  {country:'PH', name:'Manila',      util:10, occ:20, customFte:null},
+  {country:'IN', name:'Bangalore',   util:10, occ:20, customFte:null},
+  {country:'ZA', name:'Durban',      util:10, occ:20, customFte:null},
+  {country:'US', name:'San Antonio', util:10, occ:20, customFte:null},
+  {country:'UK', name:'London',      util:10, occ:20, customFte:null},
+];
+const N_LOCS = 5;
+
+// Which locations are active in equal mode (null = all active)
+const ACTIVE_LOCS = Array(N_LOCS).fill(true);
+
+// Global inputs (shared across all locations in equal mode)
+const GLOBAL = {
+  phone:  {vol:0, aht:0},
+  chat:   {vol:0, aht:0, conc:1.2},
+  email:  {vol:0, aht:0, pct:85, backlog:0},
+};
+// Per-location split percentages
+const SPLIT_PCT = {
+  phone:  Array(N_LOCS).fill(20),
+  chat:   Array(N_LOCS).fill(20),
+  email:  Array(N_LOCS).fill(20),
+};
+// Per-location channel-specific overrides (AHT can't be split, only vol)
+const LOC_EXTRA = {
+  phone: Array.from({length:N_LOCS},()=>({shift:8})),
+  chat:  Array.from({length:N_LOCS},()=>({shift:8})),
+  email: Array.from({length:N_LOCS},()=>({})),
 };
 
-function getHrs(loc){ return loc === 'UK' ? 147 : 173.2; }
-
-const ATT_HRS   = { US:153, UK:137, ZA:195, PH:143, IN:148 };
-const AVAIL_PCT = 0.93;
-const OCC_PCT   = 0.85;
-
-const SEAT = {
-  US:{ amount:300,   currency:'USD', disp:'$300' },
-  UK:{ amount:0,     currency:'GBP', disp:'£0' },
-  ZA:{ amount:10150, currency:'ZAR', disp:'R10,150' },
-  PH:{ amount:17000, currency:'PHP', disp:'₱17,000' },
-  IN:{ amount:12000, currency:'INR', disp:'₹12,000' },
+const RESULTS = {
+  phone: Array.from({length:N_LOCS},()=>({})),
+  chat:  Array.from({length:N_LOCS},()=>({})),
+  email: Array.from({length:N_LOCS},()=>({})),
 };
 
-const COUNTRIES = ['US','UK','ZA','PH','IN'];
-const COL_CCY   = { US:'USD', UK:'GBP', ZA:'ZAR', PH:'PHP', IN:'INR' };
-const ROLES     = ['TL','QA','Trainer','Ops Manager','WFM Specialist','SDM'];
-const IT_SEL    = { pc:false, monitor:false, headset:false, uniphore:false };
-const IT_USD    = { pc:40, monitor:4.5, headset:1.25, uniphore:42 };
+let CUR_CHAN = 'phone';
+let VOL_MODE = 'equal';
+const VOL_PERIOD = { phone: 'monthly', chat: 'monthly', email: 'monthly' };
+// phone default: seconds. chat/email default: minutes
+const AHT_UNIT = { phone: 'seconds', chat: 'minutes', email: 'minutes' };
 
-const ROLE_SALARIES = {
-  TL:             { US:23,  UK:15.44, ZA:15750, PH:32000,  IN:62500  },
-  QA:             { US:22,  UK:14.95, ZA:7350,  PH:28000,  IN:54500  },
-  Trainer:        { US:23,  UK:17.35, ZA:15750, PH:32000,  IN:62500  },
-  Ops_Manager:    { US:37,  UK:22.63, ZA:42000, PH:120000, IN:145000 },
-  WFM_Specialist: { US:10,  UK:15.44, ZA:15750, PH:80000,  IN:54000  },
-  SDM:            { US:50,  UK:25.10, ZA:78750, PH:180000, IN:185000 },
-};
+/* ════════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════════ */
+const g  = id => document.getElementById(id);
+const gv = id => parseFloat(g(id)?.value)||0;
+const st = (id,v) => { const e=g(id); if(e) e.textContent=v; };
+const modays = () => 22;
+function getFteHrs(li){ return LOC[li].customFte !== null ? LOC[li].customFte : (CTRY_FTE[LOC[li].country]||142.5); }
 
-const DEFAULT_RATIOS = { TL:15, QA:30, Trainer:50, Ops_Manager:100, WFM_Specialist:150, SDM:300 };
-const ROLE_TYPE = { US:'hourly', UK:'hourly', ZA:'monthly', PH:'monthly', IN:'monthly' };
-const FRINGE    = { US:0.30, UK:0.36, ZA:0.56, PH:0.55, IN:0.55 };
-const CLABELS   = { '12':'1 Year','24':'2 Years','36':'3 Years','60':'5 Years' };
-const LOC_NAMES = { US:'United States', UK:'United Kingdom', ZA:'South Africa', PH:'Philippines', IN:'India' };
+/* ════════════════════════════════════════════════
+   CORE FTE FORMULA (Workload)
+   1. Workload hrs   = (vol × AHT_sec) / 3600
+   2. Attendance hrs = (Workload hrs / (1−Util)) / (1−Availability)
+   3. FTE            = ceil(Attendance hrs / Country hrs/mo)
+════════════════════════════════════════════════ */
+function calcFTE(vol, aht_sec, util, avail, ftehrs){
+  if(!vol||!aht_sec) return {workloadHrs:0, attendanceHrs:0, fte:0};
+  const workloadHrs   = (vol * aht_sec) / 3600;
+  const attendanceHrs = (workloadHrs / (1-util)) / (1-avail);
+  const fte           = Math.ceil(attendanceHrs / ftehrs);
+  return {workloadHrs, attendanceHrs, fte};
+}
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+/* ════════════════════════════════════════════════
+   VOL PER LOCATION
+════════════════════════════════════════════════ */
+function getVol(ch, li){
+  // In equal mode, inactive locations get zero volume
+  if(VOL_MODE === 'equal' && !ACTIVE_LOCS[li]) return 0;
+  const rawVol = GLOBAL[ch].vol;
+  const monthlyVol = VOL_PERIOD[ch] === 'annual' ? rawVol / 12 : rawVol;
+  if(VOL_MODE === 'equal') return monthlyVol;
+  // split mode — apply %
+  const pct = SPLIT_PCT[ch][li] / 100;
+  return Math.round(monthlyVol * pct);
+}
 
-function getFringe(loc, isAgent = true) {
-  if (loc === 'IN') {
-    const model = document.querySelector('input[name="model"]:checked').value;
-    if (model === 'waha') return 0.20;
-    return isAgent ? 0.50 : 0.40;
+/* ════════════════════════════════════════════════
+   CALC PER CHANNEL
+════════════════════════════════════════════════ */
+/* Convert stored AHT value → seconds based on selected unit */
+function getAhtSec(ch){
+  const raw = GLOBAL[ch].aht;
+  if(AHT_UNIT[ch] === 'minutes') return raw * 60;
+  return raw; // already seconds
+}
+
+function calcPhone(li){
+  const vol    = getVol('phone', li);
+  const aht    = getAhtSec('phone');
+  const ftehrs = getFteHrs(li);
+  const util   = LOC[li].util / 100;
+  const avail  = LOC[li].occ  / 100;
+  const r = calcFTE(vol, aht, util, avail, ftehrs);
+  return {...r, vol, daily:vol?Math.round(vol/modays()):0, ftehrs, util:LOC[li].util, avail:LOC[li].occ};
+}
+
+function calcChat(li){
+  const vol    = getVol('chat', li);
+  const ahtSec = getAhtSec('chat');
+  const conc   = GLOBAL.chat.conc || 1.2;
+  const ftehrs = getFteHrs(li);
+  const util   = LOC[li].util / 100;
+  const avail  = LOC[li].occ  / 100;
+  if(!vol||!GLOBAL.chat.aht) return {workloadHrs:0,attendanceHrs:0,fte:0,vol,daily:0,ftehrs,util:LOC[li].util,avail:LOC[li].occ};
+  const r = calcFTE(vol, ahtSec, util, avail, ftehrs);
+  const fte = Math.ceil(r.fte / conc);
+  return {workloadHrs:r.workloadHrs, attendanceHrs:r.attendanceHrs, fte, vol, daily:vol?Math.round(vol/modays()):0, ftehrs, util:LOC[li].util, avail:LOC[li].occ};
+}
+
+function calcEmail(li){
+  const totalVol = getVol('email', li);
+  const ahtSec   = getAhtSec('email');
+  const pct      = (GLOBAL.email.pct||85) / 100;
+  const backlog  = GLOBAL.email.backlog||0;
+  const ftehrs   = getFteHrs(li);
+  const util     = LOC[li].util / 100;
+  const avail    = LOC[li].occ  / 100;
+  const locBacklog = VOL_MODE==='equal' ? backlog : Math.round(backlog * (SPLIT_PCT.email[li]/100));
+  const actVol = (totalVol + locBacklog) * pct;
+  const r = calcFTE(actVol, ahtSec, util, avail, ftehrs);
+  return {...r, vol:totalVol, daily:totalVol?Math.round(totalVol/modays()):0, ftehrs, util:LOC[li].util, avail:LOC[li].occ};
+}
+
+/* ════════════════════════════════════════════════
+   BUILD CARDS
+════════════════════════════════════════════════ */
+function frow(label, rightHtml, tip=''){
+  return `<div class="field-row">
+    <span class="field-label">${label}${tip?` <span class="tt" data-t="${tip}">?</span>`:''}</span>
+    <div class="field-right">${rightHtml}</div>
+  </div>`;
+}
+
+function shrinkBlock(ch, li){
+  const l=LOC[li], tot=l.util+l.occ;
+  return `<div class="shrink-block">
+    <div class="shrink-block-title">Shrinkage <span style="font-weight:400;color:var(--ink4);font-size:9px;letter-spacing:0;text-transform:none">— click % to edit</span></div>
+    <div class="shrink-row">
+      <span class="shrink-label util">Utilisation <span class="tt" data-t="In-office: training, coaching, meetings">?</span></span>
+      <div class="shrink-input-wrap">
+        <input class="shrink-input" id="sh-util-${ch}-${li}" type="number" value="${l.util}" min="0" max="60" oninput="onShrink('${ch}',${li})">
+        <span class="shrink-pct">%</span>
+      </div>
+    </div>
+    <div class="shrink-row">
+      <span class="shrink-label avail">Availability <span class="tt" data-t="Absence: sickness, lateness, unplanned leave">?</span></span>
+      <div class="shrink-input-wrap">
+        <input class="shrink-input" id="sh-avail-${ch}-${li}" type="number" value="${l.occ}" min="0" max="60" oninput="onShrink('${ch}',${li})">
+        <span class="shrink-pct">%</span>
+      </div>
+    </div>
+    <div class="shrink-bar">
+      <div class="shrink-bar-u" id="shb-u-${ch}-${li}" style="width:${l.util}%"></div>
+      <div class="shrink-bar-a" id="shb-a-${ch}-${li}" style="left:${l.util}%;width:${l.occ}%"></div>
+    </div>
+    <div class="shrink-total-row">
+      <span class="shrink-total-label">Total Shrinkage</span>
+      <span class="shrink-total-val" id="sh-tot-${ch}-${li}">${tot}%</span>
+    </div>
+  </div>`;
+}
+
+function resultBlock(ch, li){
+  const pfx = {phone:'ph',chat:'ch',email:'em'}[ch];
+  return `<div class="result-block">
+    <div class="result-step"><span class="rs-label">① Workload hrs</span><span class="rs-val" id="ir-wh-${pfx}-${li}">—</span></div>
+    <div class="result-step"><span class="rs-label">② Attendance hrs</span><span class="rs-val" id="ir-ah-${pfx}-${li}">—</span></div>
+    <div class="result-divider"></div>
+    <div class="rp-label">FTE Required</div>
+    <div class="rp-fte" id="ir-fte-${pfx}-${li}">—</div>
+    <div class="hoop-fte-row" id="ir-hfte-row-${pfx}-${li}" style="display:none">
+      <div class="hoop-fte-label">📋 HOOP rostering</div>
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <div class="hoop-fte-val" id="ir-hfte-${pfx}-${li}">—</div>
+        <div style="font-size:10px;color:var(--k-muted);font-weight:600">peak shift FTE</div>
+      </div>
+      <div class="hoop-fte-detail" id="ir-hfte-detail-${pfx}-${li}"></div>
+      <div class="hc-warn-banner" id="ir-hc-warn-${pfx}-${li}"></div>
+    </div>
+  </div>`;
+}
+
+function locHead(ch, li){
+  const l = LOC[li];
+  const opts = [['US','🇺🇸 United States'],['UK','🇬🇧 United Kingdom'],['IN','🇮🇳 India'],['PH','🇵🇭 Philippines'],['ZA','🇿🇦 South Africa']];
+  const opH = opts.map(([v,lb])=>`<option value="${v}"${v===l.country?' selected':''}>${lb}</option>`).join('');
+  const fteVal   = getFteHrs(li);
+  const isCustom = l.customFte !== null;
+  const isActive = ACTIVE_LOCS[li];
+  const prof     = CTRY_PROFILE[l.country];
+  const badgeTip = prof
+    ? `${prof.daysPerWeek}d/wk · ${prof.shiftHrs}h shift · ${prof.attHrs}h attendance/day · ${prof.paidBreak}h paid break${prof.unpaidBreak?` · ${prof.unpaidBreak}h unpaid break`:''}`
+    : '';
+  return `<div class="card-head" id="ch-head-${ch}-${li}" style="${!isActive && VOL_MODE==='equal' ? 'opacity:0.45;' : ''}">
+    <div class="card-loc-row">
+      <span class="card-flag" id="cf-${ch}-${li}">${CTRY_FLAG[l.country]}</span>
+      <input class="card-name-input" id="ln-${ch}-${li}" value="${l.name}" oninput="LOC[${li}].name=this.value;renderAll()">
+      ${VOL_MODE==='equal' ? `<button class="loc-active-btn ${isActive?'active':''}" onclick="toggleLocActive(${li})" title="${isActive?'Deactivate location':'Activate location'}">${isActive?'✓':'○'}</button>` : ''}
+    </div>
+    <select class="card-country-select" id="lc-${ch}-${li}" onchange="onCountry('${ch}',${li})">${opH}</select>
+    <div class="fte-badge-row">
+      <span class="fte-badge ${isCustom?'fte-badge-custom':''}" id="lfte-${ch}-${li}" title="${badgeTip}">${fteVal} hrs/mo</span>
+      <button class="fte-edit-btn" onclick="toggleFteEdit('${ch}',${li})" title="Edit FTE hours/month">✏️</button>
+    </div>
+    <div class="fte-edit-wrap" id="fte-edit-${ch}-${li}" style="display:none">
+      <input class="fte-edit-input" id="fte-inp-${ch}-${li}" type="number" value="${fteVal}" min="50" max="300"
+        oninput="onFteEdit('${ch}',${li},this.value)" placeholder="${CTRY_FTE[l.country]}">
+      <span class="fte-edit-unit">hrs/mo</span>
+      <button class="fte-reset-btn" onclick="resetFte('${ch}',${li})" title="Reset to country default">↺</button>
+    </div>
+  </div>`;
+}
+
+// Read-only volume display inside each card
+function volDisplay(ch, li){
+  const vol = getVol(ch, li);
+  const unit = {phone:'calls',chat:'chats',email:'emails'}[ch];
+  return `<div class="card-vol-display" id="cvd-${ch}-${li}">
+    <span class="cvd-label">Monthly Volume</span>
+    <span class="cvd-val">${vol>0?vol.toLocaleString():'—'} ${unit}</span>
+  </div>`;
+}
+
+function buildPhoneCol(li){
+  return `<div class="loc-card c${li+1}" id="ph-col-${li}">
+    ${locHead('phone', li)}
+    ${volDisplay('phone', li)}
+    ${shrinkBlock('phone', li)}
+    ${resultBlock('phone', li)}
+  </div>`;
+}
+
+function buildChatCol(li){
+  return `<div class="loc-card c${li+1}" id="ch-col-${li}">
+    ${locHead('chat', li)}
+    ${volDisplay('chat', li)}
+    ${shrinkBlock('chat', li)}
+    ${resultBlock('chat', li)}
+  </div>`;
+}
+
+function buildEmailCol(li){
+  return `<div class="loc-card c${li+1}" id="em-col-${li}">
+    ${locHead('email', li)}
+    ${volDisplay('email', li)}
+    ${shrinkBlock('email', li)}
+    ${resultBlock('email', li)}
+  </div>`;
+}
+
+function buildAllRows(){
+  const locs = Array.from({length:N_LOCS},(_,i)=>i);
+  g('phone-rows').innerHTML = locs.map(buildPhoneCol).join('');
+  g('chat-rows').innerHTML  = locs.map(buildChatCol).join('');
+  g('email-rows').innerHTML = locs.map(buildEmailCol).join('');
+  buildSplitPctFields();
+}
+
+/* ════════════════════════════════════════════════
+   SPLIT % FIELDS
+════════════════════════════════════════════════ */
+function buildSplitPctFields(){
+  ['phone','chat','email'].forEach(ch=>{
+    const container = g(`sps-${ch}-fields`);
+    if(!container) return;
+    container.innerHTML = LOC.map((loc,li)=>`
+      <div class="sps-loc">
+        <span class="sps-loc-name" style="color:${LOC_PALETTE[li]}">${CTRY_FLAG[loc.country]} ${loc.name}</span>
+        <input class="sps-loc-input" id="sps-${ch}-${li}" type="number" value="${SPLIT_PCT[ch][li]}" min="0" max="100" oninput="onSplitPct('${ch}',${li},this.value)">
+        <span class="sps-pct-sym">%</span>
+      </div>`).join('');
+  });
+}
+
+function updateSplitUI(ch){
+  const total = SPLIT_PCT[ch].reduce((a,b)=>a+b,0);
+  const totalEl = g(`sps-${ch}-total`);
+  const discEl  = g(`sps-${ch}-disc`);
+  const barEl   = g(`sps-${ch}-bar`);
+  if(totalEl){
+    totalEl.textContent = total+'%';
+    totalEl.className   = 'sps-total-val '+(total===100?'ok':'warn');
   }
-  return FRINGE[loc] || 0;
+  if(discEl) discEl.classList.toggle('show', total > 100);
+  // Stacked bar
+  if(barEl){
+    barEl.innerHTML = SPLIT_PCT[ch].map((pct,i)=>
+      `<div class="sps-bar-seg" style="width:${Math.min(pct,100-SPLIT_PCT[ch].slice(0,i).reduce((a,b)=>a+b,0))}%;background:${LOC_PALETTE[i]}"></div>`
+    ).join('');
+  }
 }
 
-function toUSD(a, ccy){ return a * (FX[ccy] || 1); }
+/* ════════════════════════════════════════════════
+   RENDER RESULTS
+════════════════════════════════════════════════ */
+function renderResults(){
+  const pfxMap = {phone:'ph',chat:'ch',email:'em'};
+  ['phone','chat','email'].forEach(ch=>{
+    const pfx = pfxMap[ch], rs = RESULTS[ch];
+    for(let i=0;i<N_LOCS;i++){
+      const r = rs[i];
+      st(`ir-wh-${pfx}-${i}`, r.workloadHrs   ? r.workloadHrs.toFixed(1)+' h'   : '—');
+      st(`ir-ah-${pfx}-${i}`, r.attendanceHrs ? r.attendanceHrs.toFixed(1)+' h' : '—');
+      st(`ir-fte-${pfx}-${i}`,r.fte           ? r.fte                            : '—');
 
-function fmtD(n, dp = 0){
-  const cfg = CURRENCY_MAP[document.getElementById('displayCurrency').value];
-  const val = n * cfg.rate;
-  if(dp === 0) return cfg.symbol + Math.round(val).toLocaleString();
-  return cfg.symbol + val.toFixed(dp);
-}
-
-function getAgentBaseMonthlyUSD(loc, tier){
-  const r = AGENT_RATES[loc], mult = tier === '2' ? 1.2 : 1.0;
-  if(r.type === 'hourly') return toUSD(r.t1 * mult * getHrs(loc), r.currency);
-  return toUSD(r.t1 * mult, r.currency);
-}
-function getAgentUSD(loc, tier){ return getAgentBaseMonthlyUSD(loc, tier) * (1 + getFringe(loc, true)); }
-
-function getRoleBaseMonthlyUSD(sr, loc){
-  const base = (ROLE_SALARIES[sr]||{})[loc] || 0;
-  if(ROLE_TYPE[loc] === 'hourly') return toUSD(base * getHrs(loc), COL_CCY[loc]);
-  return toUSD(base, COL_CCY[loc]);
-}
-function getRoleMonthlyUSD(sr, loc){ return getRoleBaseMonthlyUSD(sr, loc) * (1 + getFringe(loc, false)); }
-
-// ── Build UI ───────────────────────────────────────────────────────────────────
-
-function buildRoles(){
-  const tb = document.getElementById('rolesBody');
-  tb.innerHTML = '';
-  ROLES.forEach(role => {
-    const sr    = role.replace(/\s+/g,'_');
-    const ratio = DEFAULT_RATIOS[sr] || '';
-    const tr    = document.createElement('tr');
-    tr.innerHTML =
-      `<td>${role}</td>` +
-      `<td id="rsal_${sr}">—</td>` +
-      `<td id="rfng_${sr}">—</td>` +
-      `<td id="rtot_${sr}">—</td>` +
-      `<td><input type="number" min="1" placeholder="—" value="${ratio}" id="rr_${sr}" oninput="updateAutoHC('${sr}')"></td>` +
-      `<td><span id="rah_${sr}" style="font-size:11px;font-weight:600;color:var(--k-blue);font-family:'JetBrains Mono',monospace">—</span></td>` +
-      `<td><input type="number" min="0" max="999" step="0.01" value="0" id="rc_${sr}" oninput="calc()"></td>`;
-    tb.appendChild(tr);
-  });
-}
-
-function refreshRolesTable(){
-  const loc    = document.getElementById('location').value;
-  const symMap = { USD:'$', GBP:'£', ZAR:'R', PHP:'₱', INR:'₹' };
-  const sym    = symMap[COL_CCY[loc]] || '';
-  document.getElementById('rolesLocLabel').textContent = ROLE_TYPE[loc] === 'hourly' ? `${COL_CCY[loc]}/hr` : `${COL_CCY[loc]}/mo`;
-  const fringePct = getFringe(loc, false);
-  ROLES.forEach(role => {
-    const sr         = role.replace(/\s+/g,'_');
-    const base       = (ROLE_SALARIES[sr]||{})[loc] || 0;
-    const monthly    = ROLE_TYPE[loc] === 'hourly' ? base * getHrs(loc) : base;
-    const totalLocal = monthly * (1 + fringePct);
-    document.getElementById(`rsal_${sr}`).textContent = `${sym}${base.toLocaleString()}`;
-    document.getElementById(`rfng_${sr}`).textContent = `${(fringePct*100).toFixed(0)}%`;
-    document.getElementById(`rtot_${sr}`).textContent = `${sym}${Math.round(totalLocal).toLocaleString()}`;
-  });
-}
-
-function buildSeat(){
-  const g = document.getElementById('seatGrid');
-  g.innerHTML = COUNTRIES.map(c =>
-    `<div class="seat-item"><span class="s-loc">${LOC_NAMES[c]}</span><span class="s-val">${SEAT[c].disp}</span></div>`
-  ).join('');
-}
-
-function syncRatios(){
-  const agents = parseInt(document.getElementById('agents').value) || 1;
-  ROLES.forEach(role => {
-    const sr    = role.replace(/\s+/g,'_');
-    const ratio = parseFloat(document.getElementById(`rr_${sr}`)?.value) || 0;
-    if(ratio > 0){
-      const hc = (agents/ratio).toFixed(2);
-      document.getElementById(`rah_${sr}`).textContent = hc;
-      document.getElementById(`rc_${sr}`).value = hc;
-    } else {
-      document.getElementById(`rah_${sr}`).textContent = '—';
+      // HOOP-adjusted FTE — band rostering
+      const hoopRow    = g(`ir-hfte-row-${pfx}-${i}`);
+      const hoopValEl  = g(`ir-hfte-${pfx}-${i}`);
+      const hoopDetEl  = g(`ir-hfte-detail-${pfx}-${i}`);
+      const hoopWarnEl = g(`ir-hc-warn-${pfx}-${i}`);
+      const hoopResult = calcHoopFte(ch, i, r);
+      if(hoopRow){
+        if(hoopResult && r.fte){
+          hoopRow.style.display = 'block';
+          if(hoopResult.hoopOnly){
+            // No volume splits — show shift rotation result
+            if(hoopValEl) hoopValEl.textContent = hoopResult.totalFte;
+            if(hoopDetEl) hoopDetEl.textContent = hoopResult.note;
+            // Warn if rotation multiplier pushed HC above base FTE
+            if(hoopWarnEl){
+              if(hoopResult.rotationMultiplier > 1){
+                hoopWarnEl.innerHTML = `⚠️ <strong>Use unique headcount (${hoopResult.totalFte} FTE)</strong> — your ${hoopResult.rotationMultiplier > 0 ? 'operating window requires ' + hoopResult.rotationMultiplier + ' shift rotations' : 'coverage window'}, so you need more staff than the base workload FTE (${r.fte}) suggests. Hire to the unique headcount figure.`;
+                hoopWarnEl.classList.add('show');
+              } else {
+                hoopWarnEl.classList.remove('show');
+              }
+            }
+          } else {
+            // Full band breakdown
+            const peakBand = hoopResult.bands.find(b=>!b.warn);
+            if(hoopValEl) hoopValEl.textContent = peakBand ? peakBand.fte : hoopResult.totalFte;
+            if(hoopDetEl){
+              const lines = hoopResult.bands.map(b =>
+                b.warn
+                  ? `${b.label}: ${b.vol.toLocaleString()} chats`
+                  : `${b.label}: ${b.fte} FTE (${b.share}% · ${b.vol.toLocaleString()})`
+              );
+              lines.push(`Total unique headcount: ${hoopResult.totalFte} FTE`);
+              hoopDetEl.innerHTML = lines.join('<br>');
+            }
+            // ── Change 1: Warn if FTE < unique headcount ──
+            if(hoopWarnEl){
+              if(hoopResult.totalFte > r.fte){
+                hoopWarnEl.innerHTML = `⚠️ <strong>Use unique headcount (${hoopResult.totalFte} FTE)</strong> — the HOOP band rostering requires more total staff than the base FTE (${r.fte}) due to multi-shift coverage. Hire to the unique headcount figure.`;
+                hoopWarnEl.classList.add('show');
+              } else {
+                hoopWarnEl.classList.remove('show');
+              }
+            }
+          }
+        } else {
+          hoopRow.style.display = 'none';
+          if(hoopWarnEl) hoopWarnEl.classList.remove('show');
+        }
+      }
     }
+    // Update volume display inside each card
+    for(let i=0;i<N_LOCS;i++){
+      const vol = getVol(ch,i);
+      const unit = {phone:'calls',chat:'chats',email:'emails'}[ch];
+      const el = g(`cvd-${ch}-${i}`);
+      if(el){
+        const valEl = el.querySelector('.cvd-val');
+        if(valEl) valEl.textContent = vol>0 ? vol.toLocaleString()+' '+unit : '—';
+      }
+    }
+    const tot = rs.reduce((a,r)=>a+(r.fte||0),0);
+    st('pip-'+ch, tot||'—');
   });
 }
 
-function updateAutoHC(sr){
-  const agents = parseInt(document.getElementById('agents').value) || 1;
-  const ratio  = parseFloat(document.getElementById(`rr_${sr}`)?.value) || 0;
-  if(ratio > 0){
-    const hc = (agents/ratio).toFixed(2);
-    document.getElementById(`rah_${sr}`).textContent = hc;
-    document.getElementById(`rc_${sr}`).value = hc;
-  } else {
-    document.getElementById(`rah_${sr}`).textContent = '—';
-  }
-  calc();
+function updateFooter(){
+  let gFTE=0;
+  const chTots={phone:0,chat:0,email:0};
+  ['phone','chat','email'].forEach(ch=>{
+    for(let i=0;i<N_LOCS;i++){gFTE+=RESULTS[ch][i].fte||0;chTots[ch]+=RESULTS[ch][i].fte||0;}
+  });
+  st('ft-total-hc', gFTE||'—');
+  ['phone','chat','email'].forEach(ch=>st('ft-ch-'+ch, chTots[ch]||'—'));
 }
 
-function updatePricingNote(){
-  const loc   = document.getElementById('location').value;
-  const hrs   = ATT_HRS[loc];
-  const model = document.getElementById('pricingModel').value;
-  const prod  = (hrs*AVAIL_PCT).toFixed(1);
-  const trans = (hrs*AVAIL_PCT*OCC_PCT).toFixed(1);
-  const notes = {
-    fte:         `TCO ÷ agents = price per FTE/mo`,
-    attendance:  `FTE ÷ ${hrs} att. hrs/mo`,
-    productive:  `FTE ÷ ${prod} prod. hrs/mo (×${(AVAIL_PCT*100).toFixed(0)}% avail)`,
-    transaction: `FTE ÷ ${trans} trans. hrs/mo (×${(OCC_PCT*100).toFixed(0)}% occ)`,
-    minute:      `Transaction hour ÷ 60`,
+/* ════════════════════════════════════════════════
+   GLOBAL INPUT HINTS
+════════════════════════════════════════════════ */
+function updateHint(ch){
+  const hintEl = g(`gs-${ch==='phone'?'ph':ch==='chat'?'ch':'em'}-hint`);
+  if(!hintEl) return;
+  const rawVol = GLOBAL[ch].vol, aht = GLOBAL[ch].aht;
+  if(!rawVol||!aht){ hintEl.textContent=''; return; }
+  const monthlyVol = VOL_PERIOD[ch] === 'annual' ? rawVol / 12 : rawVol;
+  const ahtSec = getAhtSec(ch);
+  const ahtMins = (ahtSec / 60).toFixed(1);
+  const wl = (monthlyVol * ahtSec) / 3600;
+  const dailyVol = Math.round(monthlyVol / modays());
+  const annualNote = VOL_PERIOD[ch] === 'annual' ? ` (÷12 = ${Math.round(monthlyVol).toLocaleString()}/mo)` : '';
+  const ahtNote = AHT_UNIT[ch] === 'minutes' ? ` · AHT ${ahtMins} mins` : ` · AHT ${ahtSec}s`;
+  hintEl.textContent = `${dailyVol.toLocaleString()} ${ch==='phone'?'calls':ch==='chat'?'chats':'emails'}/day · ${wl.toFixed(0)} workload hrs/mo${annualNote}${ahtNote}`;
+}
+
+/* ════════════════════════════════════════════════
+   MASTER CALC
+════════════════════════════════════════════════ */
+function calcAll(){
+  for(let li=0;li<N_LOCS;li++){
+    RESULTS.phone[li] = calcPhone(li);
+    RESULTS.chat[li]  = calcChat(li);
+    RESULTS.email[li] = calcEmail(li);
+  }
+  renderResults();
+  updateFooter();
+  if(CUR_CHAN==='summary') renderSummary();
+}
+
+function renderAll(){ buildAllRows(); calcAll(); }
+
+/* ════════════════════════════════════════════════
+   INPUT HANDLERS
+════════════════════════════════════════════════ */
+function onGlobal(ch, fld, raw){
+  const val = parseFloat(raw)||0;
+  GLOBAL[ch][fld] = val;
+  updateHint(ch);
+  calcAll();
+}
+
+function onVolPeriod(ch, period){
+  VOL_PERIOD[ch] = period;
+  updateHint(ch);
+  calcAll();
+}
+
+function onAhtUnit(ch, unit){
+  AHT_UNIT[ch] = unit;
+  updateHint(ch);
+  calcAll();
+}
+
+function toggleFteEdit(ch, li){
+  const wrap = g(`fte-edit-${ch}-${li}`);
+  if(!wrap) return;
+  const open = wrap.style.display === 'none';
+  wrap.style.display = open ? 'flex' : 'none';
+  if(open){ const inp = g(`fte-inp-${ch}-${li}`); if(inp) inp.focus(); }
+}
+
+function onFteEdit(ch, li, raw){
+  const val = parseFloat(raw);
+  LOC[li].customFte = (!isNaN(val) && val > 0) ? val : null;
+  ['phone','chat','email'].forEach(c => {
+    const badge = g(`lfte-${c}-${li}`);
+    if(badge){ badge.textContent = getFteHrs(li)+' hrs/mo'; badge.classList.toggle('fte-badge-custom', LOC[li].customFte !== null); }
+    if(c !== ch){ const inp = g(`fte-inp-${c}-${li}`); if(inp) inp.value = getFteHrs(li); }
+  });
+  calcAll();
+}
+
+function resetFte(ch, li){
+  LOC[li].customFte = null;
+  ['phone','chat','email'].forEach(c => {
+    const badge = g(`lfte-${c}-${li}`);
+    if(badge){ badge.textContent = getFteHrs(li)+' hrs/mo'; badge.classList.remove('fte-badge-custom'); }
+    const inp = g(`fte-inp-${c}-${li}`);
+    if(inp) inp.value = CTRY_FTE[LOC[li].country];
+  });
+  calcAll();
+}
+
+function toggleLocActive(li){
+  ACTIVE_LOCS[li] = !ACTIVE_LOCS[li];
+  renderAll();
+  calcAll();
+}
+
+function onSplitPct(ch, li, raw){
+  SPLIT_PCT[ch][li] = parseFloat(raw)||0;
+  updateSplitUI(ch);
+  calcAll();
+}
+
+function onShrink(ch, li){
+  // Read from whichever channel's card triggered the change
+  const util = parseFloat(g(`sh-util-${ch}-${li}`)?.value) || 0;
+  const occ  = parseFloat(g(`sh-avail-${ch}-${li}`)?.value) || 0;
+  LOC[li].util = util;
+  LOC[li].occ  = occ;
+  const tot = util + occ;
+  // Sync all three channel cards for this location
+  ['phone','chat','email'].forEach(c => {
+    const bu = g(`shb-u-${c}-${li}`);   if(bu) bu.style.width = util+'%';
+    const ba = g(`shb-a-${c}-${li}`);   if(ba){ ba.style.left = util+'%'; ba.style.width = occ+'%'; }
+    const tv = g(`sh-tot-${c}-${li}`);  if(tv) tv.textContent = tot+'%';
+    // Sync the input values too so they stay consistent across tabs
+    const ui = g(`sh-util-${c}-${li}`);  if(ui && c !== ch) ui.value = util;
+    const ai = g(`sh-avail-${c}-${li}`); if(ai && c !== ch) ai.value = occ;
+  });
+  updateTopbarShrink();
+  calcAll();
+}
+
+function onCountry(ch, li){
+  const sel = g(`lc-${ch}-${li}`); if(!sel) return;
+  LOC[li].country = sel.value;
+  LOC[li].customFte = null;
+  const ftehrs = getFteHrs(li);
+  ['phone','chat','email'].forEach(c => {
+    const lf = g(`lfte-${c}-${li}`);
+    if(lf){ lf.textContent = ftehrs+' hrs/mo'; lf.classList.remove('fte-badge-custom'); }
+    const cf = g(`cf-${c}-${li}`); if(cf) cf.textContent = CTRY_FLAG[LOC[li].country];
+    const lc = g(`lc-${c}-${li}`); if(lc && c !== ch) lc.value = LOC[li].country;
+    const inp = g(`fte-inp-${c}-${li}`); if(inp) inp.value = ftehrs;
+  });
+  ['phone','chat','email'].forEach(c=>{
+    const nameEl = g(`sps-${c}-fields`)?.querySelectorAll('.sps-loc-name')[li];
+    if(nameEl) nameEl.textContent = `${CTRY_FLAG[LOC[li].country]} ${LOC[li].name}`;
+  });
+  calcAll();
+}
+
+function updateTopbarShrink(){
+  const tots = Array.from({length:N_LOCS},(_,li)=>LOC[li].util+LOC[li].occ);
+  const avg  = Math.round(tots.reduce((a,b)=>a+b,0)/N_LOCS);
+  st('tb-shrink', avg+'%');
+  const us = LOC.slice(0,N_LOCS).map(l=>l.util), os = LOC.slice(0,N_LOCS).map(l=>l.occ);
+  const sU = us.every(u=>u===us[0]), sO = os.every(o=>o===os[0]);
+  st('tb-shrink-detail', sU&&sO ? `(${us[0]}% util + ${os[0]}% avail)` : '(avg across locs)');
+}
+
+/* ════════════════════════════════════════════════
+   SUMMARY
+════════════════════════════════════════════════ */
+function renderSummary(){
+  const CNAMES = {phone:'📞 Phone',chat:'💬 Chat',email:'✉️ Email'};
+  const cards = g('sv-loc-cards');
+  if(cards) cards.innerHTML = Array.from({length:N_LOCS},(_,li)=>{
+    const loc=LOC[li];
+    const pS=RESULTS.phone[li].fte||0, cS=RESULTS.chat[li].fte||0, eS=RESULTS.email[li].fte||0;
+    const tot=pS+cS+eS;
+    return `<div class="sum-card c${li+1}">
+      <div class="sc-country">${CTRY_FLAG[loc.country]} ${CTRY_NAME[loc.country]}</div>
+      <div class="sc-name">${loc.name}</div>
+      <div class="sc-total">${tot||'—'}</div>
+      <div class="sc-total-lbl">Total FTE</div>
+      <div class="sc-rows">
+        ${[['phone',pS,'📞'],['chat',cS,'💬'],['email',eS,'✉️']].map(([ch,v,ico])=>`
+          <div class="sc-row"><span class="sc-row-lbl">${ico} ${ch.charAt(0).toUpperCase()+ch.slice(1)}</span><span class="sc-row-val">${v||'—'}</span></div>`).join('')}
+      </div>
+      <div class="sc-fte">FTE hrs/mo: ${CTRY_FTE[loc.country]}</div>
+    </div>`;
+  }).join('');
+
+  const tbody = g('sv-tbody'); if(!tbody) return;
+  let rows='', gFTE=0;
+  ['phone','chat','email'].forEach(ch=>{
+    let tFTE=0, tVol=0;
+    Array.from({length:N_LOCS},(_,li)=>{
+      const r=RESULTS[ch][li], loc=LOC[li], cn=li+1;
+      tFTE+=r.fte||0; tVol+=r.vol||0;
+      rows+=`<tr>
+        <td style="color:var(--ink3)">${li===0?CNAMES[ch]:''}</td>
+        <td><span class="loc-tag" style="background:var(--c${cn}l);color:var(--c${cn});border:1px solid var(--c${cn}b)">${loc.name}</span></td>
+        <td>${CTRY_FLAG[loc.country]} ${CTRY_NAME[loc.country]}</td>
+        <td class="mono">${(r.vol||0).toLocaleString()}</td>
+        <td class="mono" style="color:var(--ink3)">${r.workloadHrs?r.workloadHrs.toFixed(1):'—'}</td>
+        <td class="mono" style="color:var(--ink3)">${r.attendanceHrs?r.attendanceHrs.toFixed(1):'—'}</td>
+        <td class="mono" style="color:var(--c${cn})">${r.fte||'—'}</td>
+        <td class="mono">${CTRY_FTE[loc.country]}</td>
+        <td style="font-size:11px;color:var(--ink3)">${loc.util}% + ${loc.occ}%</td>
+      </tr>`;
+    });
+    gFTE+=tFTE;
+    rows+=`<tr class="subtotal"><td colspan="2">↳ ${CNAMES[ch]} subtotal</td><td colspan="2" class="mono">${tVol.toLocaleString()}</td><td colspan="2">—</td><td class="mono">${tFTE}</td><td colspan="2">—</td></tr>`;
+  });
+  rows+=`<tr class="grand"><td colspan="3"><strong>Grand Total</strong></td><td colspan="3">—</td><td class="mono">${gFTE}</td><td colspan="2">—</td></tr>`;
+  tbody.innerHTML=rows;
+}
+
+/* ════════════════════════════════════════════════
+   UI CONTROLS
+════════════════════════════════════════════════ */
+function switchChan(ch){
+  CUR_CHAN=ch;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active','ph','ch','em','ec'));
+  const cls={phone:'ph',chat:'ch',email:'em',erlang:'ec'};
+  const btn=document.querySelector(`.tab-btn[onclick*="'${ch}'"]`);
+  if(btn){btn.classList.add('active');if(cls[ch])btn.classList.add(cls[ch]);}
+  document.querySelectorAll('.ch-view,.summary-view').forEach(v=>v.classList.remove('active'));
+  const view=g('view-'+ch); if(view) view.classList.add('active');
+  const vmb=g('vol-mode-bar'); if(vmb) vmb.style.display=['phone','chat','email'].includes(ch)?'flex':'none';
+  if(ch==='summary') renderSummary();
+  if(ch==='erlang')  calcErlang();
+}
+
+function setVolMode(mode){
+  VOL_MODE=mode;
+  g('vt-equal').classList.toggle('active',mode==='equal');
+  g('vt-split').classList.toggle('active',mode==='split');
+  // Show equal-mode disclaimer
+  const disc = g('eq-disclaimer');
+  if(disc) disc.classList.toggle('show', mode==='equal');
+  // Show / hide split % strips
+  ['phone','chat','email'].forEach(ch=>{
+    const sps=g('sps-'+ch); if(sps) sps.classList.toggle('show',mode==='split');
+    updateSplitUI(ch);
+  });
+  // Re-render cards so active toggle shows in equal mode only
+  renderAll();
+}
+
+/* ════════════════════════════════════════════════
+   HOOP (Hours of Operation)
+════════════════════════════════════════════════ */
+function toggleHoop(ch){
+  const panel  = g(`hoop-panel-${ch}`);
+  const btn    = g(`hoop-toggle-${ch}`);
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'flex';
+  btn.classList.toggle('open', !isOpen);
+}
+
+/* Set all days checked + 00:00–00:00 for 24/7 */
+function setHoop247(ch){
+  // Check all day checkboxes
+  document.querySelectorAll(`.hoop-day-cb[data-ch="${ch}"]`).forEach(cb => cb.checked = true);
+  // Set hours to midnight–midnight (= 24h)
+  const openEl = g(`hoop-open-${ch}`); if(openEl) openEl.value = '00:00';
+  const clsEl  = g(`hoop-close-${ch}`); if(clsEl) clsEl.value  = '00:00';
+  // Open the panel so user can see the result
+  const panel = g(`hoop-panel-${ch}`);
+  const btn   = g(`hoop-toggle-${ch}`);
+  if(panel) panel.style.display = 'flex';
+  if(btn)   btn.classList.add('open');
+  onHoopChange(ch);
+  // Show the split nudge unless splits are already entered
+  update247Nudge(ch);
+}
+
+/* Clear all HOOP fields for a channel */
+function clearHoop(ch){
+  // Uncheck all days except Mon–Fri defaults
+  const defaults = ['Mon','Tue','Wed','Thu','Fri'];
+  document.querySelectorAll(`.hoop-day-cb[data-ch="${ch}"]`).forEach(cb => {
+    cb.checked = defaults.includes(cb.dataset.day);
+  });
+  // Reset times
+  const openEl = g(`hoop-open-${ch}`); if(openEl) openEl.value = ch==='email' ? '08:00' : '08:00';
+  const clsEl  = g(`hoop-close-${ch}`); if(clsEl) clsEl.value  = ch==='email' ? '17:00' : '20:00';
+  const tzEl   = g(`hoop-tz-${ch}`);   if(tzEl)   tzEl.value   = 'CST';
+  // Clear split fields
+  ['wkday','wkend','peak','offpeak'].forEach(f => {
+    const el = g(`hoop-${f}-${ch}`); if(el) el.value = '';
+  });
+  // Clear notes
+  const notes = g(`hoop-notes-${ch}`); if(notes) notes.value = '';
+  // Hide warnings
+  const sw = g(`hoop-split-warn-${ch}`); if(sw) sw.style.display='none';
+  const pw = g(`hoop-peak-warn-${ch}`);  if(pw) pw.style.display='none';
+  // Close panel
+  const panel = g(`hoop-panel-${ch}`);
+  const btn   = g(`hoop-toggle-${ch}`);
+  if(panel) panel.style.display = 'none';
+  if(btn)   btn.classList.remove('open');
+  onHoopChange(ch);
+}
+
+function update247Nudge(ch){
+  const nudgeEl = g(`hoop-247-nudge-${ch}`);
+  if(!nudgeEl) return;
+  const open  = g(`hoop-open-${ch}`)?.value;
+  const close = g(`hoop-close-${ch}`)?.value;
+  const is247 = open === '00:00' && close === '00:00';
+  const days  = Array.from(document.querySelectorAll(`.hoop-day-cb[data-ch="${ch}"]`)).filter(cb=>cb.checked);
+  const hasWeekend = days.some(cb=>['Sat','Sun'].includes(cb.dataset.day));
+  const wkday = parseFloat(g(`hoop-wkday-${ch}`)?.value) || 0;
+  const wkend = parseFloat(g(`hoop-wkend-${ch}`)?.value) || 0;
+  const splitsEntered = wkday > 0 || wkend > 0;
+  // Show nudge if: 24h coverage OR has weekend days, AND no splits yet entered
+  nudgeEl.classList.toggle('show', (is247 || hasWeekend) && !splitsEntered);
+}
+
+function onHoopChange(ch){
+  updateHoopSummary(ch);
+  update247Nudge(ch);
+  calcAll();
+}
+
+function onHoopSplit(ch){
+  const wkday   = parseFloat(g(`hoop-wkday-${ch}`)?.value)   || 0;
+  const wkend   = parseFloat(g(`hoop-wkend-${ch}`)?.value)   || 0;
+  const peak    = parseFloat(g(`hoop-peak-${ch}`)?.value)    || 0;
+  const offpeak = parseFloat(g(`hoop-offpeak-${ch}`)?.value) || 0;
+  const warnEl = g(`hoop-split-warn-${ch}`);
+  const pkWarn = g(`hoop-peak-warn-${ch}`);
+  if(warnEl) warnEl.style.display = (wkday||wkend) && Math.round(wkday+wkend)!==100 ? 'flex':'none';
+  if(pkWarn) pkWarn.style.display = (peak||offpeak) && Math.round(peak+offpeak)!==100 ? 'flex':'none';
+  update247Nudge(ch);
+  onHoopChange(ch);
+}
+
+/* ════════════════════════════════════════════════
+   HOOP-AWARE FTE — CORRECT SHIFT-BAND ROSTERING
+   ─────────────────────────────────────────────
+   Principle:
+   • HOOP does NOT reduce total headcount needed.
+   • It tells you HOW to distribute that headcount across shift bands.
+   • Each band is staffed independently; minimum 3 FTE per active band.
+   • Total unique headcount = sum of all band FTEs (may exceed base FTE
+     due to min-staffing floors and rounding per band).
+   • Base FTE (no HOOP) is always shown as the flat-coverage reference.
+
+   Formula per band:
+     Band volume    = total vol × band share
+     Workload hrs   = (band vol × AHT_sec) / 3600
+     Attendance hrs = (workload / (1−util)) / (1−avail)
+     Raw FTE        = ceil(attendance hrs / country att hrs/mo)
+     Band FTE       = max( ceil(raw FTE / concurrency), MIN_FTE_PER_SHIFT )
+════════════════════════════════════════════════ */
+function getHoopData(ch){
+  const days = Array.from(document.querySelectorAll(`.hoop-day-cb[data-ch="${ch}"]`))
+    .filter(cb=>cb.checked).map(cb=>cb.dataset.day);
+  const open  = g(`hoop-open-${ch}`)?.value  || '';
+  const close = g(`hoop-close-${ch}`)?.value || '';
+  const wkdayPct   = parseFloat(g(`hoop-wkday-${ch}`)?.value)   || null;
+  const wkendPct   = parseFloat(g(`hoop-wkend-${ch}`)?.value)   || null;
+  const peakPct    = parseFloat(g(`hoop-peak-${ch}`)?.value)    || null;
+  const offpeakPct = parseFloat(g(`hoop-offpeak-${ch}`)?.value) || null;
+
+  const hasSplits = wkdayPct!==null || wkendPct!==null || peakPct!==null || offpeakPct!==null;
+  const hasTime   = !!(open && close);
+  const hasDays   = days.length > 0;
+  if(!hasSplits && !hasTime && !hasDays) return null;
+
+  // Operating hours per day
+  let dailyOpHrs = 9; // default 09:00–18:00
+  if(hasTime){
+    const [oh,om] = open.split(':').map(Number);
+    const [ch2,cm] = close.split(':').map(Number);
+    const openMins  = oh*60+om;
+    const closeMins = ch2*60+cm;
+    dailyOpHrs = (openMins===0 && closeMins===0) ? 24
+      : closeMins > openMins ? (closeMins-openMins)/60
+      : (1440-openMins+closeMins)/60;
+  }
+
+  const daysPerWeek  = hasDays ? days.length : 5;
+  const weekendDays  = ['Sat','Sun'].filter(d=>days.includes(d)).length;
+  const weekdayDays  = daysPerWeek - weekendDays;
+
+  return { days, daysPerWeek, weekdayDays, weekendDays,
+           dailyOpHrs, wkdayPct, wkendPct, peakPct, offpeakPct, hasSplits };
+}
+
+function calcBandFte(bandVol, ahtSec, util, avail, ftehrs, conc){
+  if(!bandVol || !ahtSec) return 0;
+  const workload = (bandVol * ahtSec) / 3600;
+  const attHrs   = (workload / (1-util)) / (1-avail);
+  const rawFte   = Math.ceil(attHrs / ftehrs);
+  const fte      = Math.ceil(rawFte / conc);
+  return Math.max(fte, MIN_FTE_PER_SHIFT);
+}
+
+function calcHoopFte(ch, li, baseResult){
+  const hoop = getHoopData(ch);
+  if(!hoop || !baseResult.vol) return null;
+
+  const vol    = baseResult.vol;
+  const ahtSec = getAhtSec(ch);
+  const ftehrs = getFteHrs(li);
+  const util   = LOC[li].util / 100;
+  const avail  = LOC[li].occ  / 100;
+  const conc   = ch==='chat' ? (GLOBAL.chat.conc||1.2) : 1;
+
+  const { wkdayPct, wkendPct, peakPct, offpeakPct, hasSplits,
+          weekdayDays, weekendDays, dailyOpHrs, daysPerWeek } = hoop;
+
+  // ── No volume splits — apply shift-rotation multiplier if window > shift ──
+  if(!hasSplits){
+    const countryShiftHrs = CTRY_PROFILE[LOC[li].country]?.shiftHrs || 8;
+    const shiftRotations  = dailyOpHrs / countryShiftHrs;
+    const rotationMultiplier = Math.ceil(shiftRotations);
+    const adjustedFte = baseResult.fte * rotationMultiplier;
+    const needsMultiplier = rotationMultiplier > 1;
+    return {
+      bands: [],
+      totalFte: adjustedFte,
+      peakFte: baseResult.fte,
+      note: needsMultiplier
+        ? `${daysPerWeek}d/wk · ${dailyOpHrs}h/day · ${dailyOpHrs}h ÷ ${countryShiftHrs}h shift = ${rotationMultiplier} rotations → ${adjustedFte} unique FTE`
+        : `${daysPerWeek}d/wk · ${dailyOpHrs===24?'24h':dailyOpHrs+'h'}/day · base FTE applies`,
+      hoopOnly: true,
+      rotationMultiplier,
+      adjustedFte
+    };
+  }
+
+  // ── Resolve splits with sensible defaults ──
+  // Weekday/weekend: if only one side given, infer the other
+  const wd = wkdayPct!==null ? wkdayPct/100 : (wkendPct!==null ? (100-wkendPct)/100 : 1.0);
+  const we = wkendPct!==null ? wkendPct/100 : (wkdayPct!==null ? (100-wkdayPct)/100 : 0.0);
+  // Peak/off-peak: if only one side given, infer the other
+  const pk = peakPct!==null    ? peakPct/100    : (offpeakPct!==null ? (100-offpeakPct)/100 : 1.0);
+  const op = offpeakPct!==null ? offpeakPct/100 : (peakPct!==null    ? (100-peakPct)/100    : 0.0);
+
+  const hasWeekend = weekendDays > 0;
+  const bands = [];
+
+  // Helper: compute and push a band
+  const addBand = (label, share, warn=false) => {
+    const bandVol = Math.round(vol * share);
+    if(share <= 0) return;
+    if(warn){
+      bands.push({ label, vol:bandVol, fte:0, share:Math.round(share*100), warn:true });
+      return;
+    }
+    const fte = calcBandFte(bandVol, ahtSec, util, avail, ftehrs, conc);
+    bands.push({ label, vol:bandVol, fte, share:Math.round(share*100) });
   };
-  document.getElementById('pricingNote').textContent = '⚙ ' + (notes[model]||'');
-}
 
-function showTab(id, el){
-  document.querySelectorAll('.tc').forEach(e  => e.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
-  document.getElementById('tc-' + id).classList.add('active');
-  el.classList.add('active');
-}
+  addBand('Weekday peak',      wd * pk);
+  if(op > 0) addBand('Weekday off-peak', wd * op);
 
-function toggleIT(el, key){
-  IT_SEL[key] = !IT_SEL[key];
-  el.classList.toggle('active', IT_SEL[key]);
-  calc();
-}
-
-let zaSupportDirty = false;
-function updateZASupport() {
-  const loc = document.getElementById('location').value;
-  if (loc === 'ZA' && !zaSupportDirty) {
-    const a = parseInt(document.getElementById('agents').value) || 1;
-    const m = parseInt(document.querySelector('input[name="contract"]:checked').value) || 12;
-    document.getElementById('mSupportStaff').value = a * m * 80;
-  }
-}
-
-function onLocChange(){
-  const loc  = document.getElementById('location').value;
-  const tier = document.querySelector('input[name="tier"]:checked').value;
-  const r    = AGENT_RATES[loc];
-  const mult = tier === '2' ? 1.2 : 1.0;
-  document.getElementById('rateNote').textContent = r.type === 'hourly'
-    ? `Tier ${tier} — ${r.symbol}${(r.t1*mult).toFixed(2)}/hr · ${loc}`
-    : `Tier ${tier} — ${r.symbol}${Math.round(r.t1*mult).toLocaleString()}/mo · ${loc}`;
-
-  const locCcyMap = { US:'USD', UK:'GBP', ZA:'GBP', PH:'USD', IN:'USD' };
-  document.getElementById('displayCurrency').value = locCcyMap[loc];
-
-  const DEFAULT_GM = { US:23, UK:25, ZA:26, PH:35, IN:15 };
-  document.getElementById('gmPct').value = DEFAULT_GM[loc];
-
-  document.getElementById('mTravel').value = loc === 'PH' ? '50000' : '';
-
-  if (loc === 'ZA') {
-    zaSupportDirty = false;
-    updateZASupport();
-  } else {
-    document.getElementById('mSupportStaff').value = '';
+  if(hasWeekend){
+    if(we > 0) addBand('Weekend peak',     we * pk);
+    if(we > 0 && op > 0) addBand('Weekend off-peak',  we * op);
+  } else if(we > 0){
+    // User entered weekend % but HOOP has no weekend days — flag it
+    addBand(`⚠ Weekend vol — no weekend days in HOOP`, we, true);
   }
 
-  const autoIT = ['US','IN','PH'].includes(loc);
-  IT_SEL.pc = autoIT; IT_SEL.monitor = autoIT; IT_SEL.headset = autoIT; IT_SEL.uniphore = false;
-  ['pc','monitor','headset','uniphore'].forEach(k => {
-    document.querySelector(`.it-item [data-key="${k}"]`).closest('.it-item').classList.toggle('active', IT_SEL[k]);
+  const totalFte = bands.reduce((s,b)=>s+(b.fte||0), 0);
+  const peakFte  = bands.find(b=>!b.warn)?.fte ?? baseResult.fte;
+
+  return {
+    bands,
+    totalFte,
+    peakFte,
+    note: `${daysPerWeek}d/wk · ${dailyOpHrs===24?'24h':dailyOpHrs+'h'}/day`,
+    hoopOnly: false
+  };
+}
+
+function updateHoopSummary(ch){
+  const summaryEl = g(`hoop-summary-${ch}`);
+  if(!summaryEl) return;
+  const chips = [];
+
+  const days = Array.from(document.querySelectorAll(`.hoop-day-cb[data-ch="${ch}"]`))
+    .filter(cb=>cb.checked).map(cb=>cb.dataset.day);
+
+  if(days.length===7){ chips.push(`📅 7 days / week`); }
+  else if(days.length>0){ chips.push(`📅 ${days.join(', ')}`); }
+
+  const open  = g(`hoop-open-${ch}`)?.value;
+  const close = g(`hoop-close-${ch}`)?.value;
+  const tz    = g(`hoop-tz-${ch}`)?.value||'';
+  if(open && close){
+    const [oh] = open.split(':').map(Number);
+    const [ch2] = close.split(':').map(Number);
+    const hrs = ch2===oh ? 24 : ch2>oh ? ch2-oh : 24-oh+ch2;
+    const label = (open==='00:00'&&close==='00:00') ? '24h (24/7)' : `${fmtTime(open)}–${fmtTime(close)} ${tz} (${hrs}h)`;
+    chips.push(`🕐 ${label}`);
+  }
+
+  const wkday   = g(`hoop-wkday-${ch}`)?.value;
+  const wkend   = g(`hoop-wkend-${ch}`)?.value;
+  const peak    = g(`hoop-peak-${ch}`)?.value;
+  const offpeak = g(`hoop-offpeak-${ch}`)?.value;
+  if(wkday||wkend)   chips.push(`📊 Wkday ${wkday||'?'}% / Wkend ${wkend||'?'}%`);
+  if(peak||offpeak)  chips.push(`⚡ Peak ${peak||'?'}% / Off-peak ${offpeak||'?'}%`);
+
+  const notes = g(`hoop-notes-${ch}`)?.value?.trim();
+  if(notes) chips.push(`📝 ${notes.length>40?notes.slice(0,40)+'…':notes}`);
+
+  summaryEl.innerHTML = chips.length
+    ? chips.map(c=>`<span class="hoop-chip">${c}</span>`).join('') : '';
+
+  // Show/hide clear button
+  const clearBtn = g(`hoop-clear-${ch}`);
+  if(clearBtn) clearBtn.style.display = chips.length ? 'flex' : 'none';
+
+  const noteEl = g(`hoop-note-${ch}`);
+  if(noteEl) noteEl.textContent = chips.length ? `${chips.length} field${chips.length>1?'s':''} configured` : '';
+}
+
+function fmtTime(t){
+  if(!t) return '';
+  const [h,m] = t.split(':').map(Number);
+  const ampm = h>=12?'PM':'AM';
+  const h12  = h%12||12;
+  return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+/* ════════════════════════════════════════════════
+   ERLANG C ENGINE
+   ─────────────────────────────────────────────
+   Formula:
+   • Traffic intensity A = (calls/interval × AHT_sec) / interval_sec
+   • Erlang C probability P(wait) = ErlangC(N, A)
+   • Service Level = 1 − P(wait) × e^(−(N−A)×T/AHT)
+   • Iterate N upward until SL target met OR occupancy ≤ maxOcc
+════════════════════════════════════════════════ */
+
+let ERLANG_CHAN = 'phone'; // currently selected channel in Erlang view
+
+function onErlangChannel(ch){
+  ERLANG_CHAN = ch;
+  calcErlang();
+}
+
+/* Erlang C probability: P(all agents busy) */
+function erlangC(N, A){
+  if(N <= 0 || A <= 0) return 0;
+  if(A >= N) return 1; // unstable — traffic exceeds capacity
+  // Compute using iterative method to avoid factorial overflow
+  // P(0) via Erlang B recursion then convert to Erlang C
+  let erlangB = 1.0;
+  for(let i = 1; i <= N; i++){
+    erlangB = (A * erlangB) / (i + A * erlangB);
+  }
+  // Erlang C = (N * erlangB) / (N - A * (1 - erlangB))
+  const denom = N - A * (1 - erlangB);
+  if(denom <= 0) return 1;
+  return (N * erlangB) / denom;
+}
+
+/* Service level for N agents, traffic A, target time T secs, AHT secs */
+function serviceLevel(N, A, T, ahtSec){
+  if(N <= 0 || A <= 0 || ahtSec <= 0) return 0;
+  if(A >= N) return 0;
+  const Pc = erlangC(N, A);
+  return 1 - Pc * Math.exp(-(N - A) * T / ahtSec);
+}
+
+/* Find minimum N agents to meet SL target, capped at maxOcc */
+function erlangAgents(callsPerInterval, ahtSec, intervalSec, slTarget, tTarget, maxOcc){
+  if(!callsPerInterval || !ahtSec) return { agents:0, traffic:0, sl:0, occ:0, pw:0 };
+  const A = (callsPerInterval * ahtSec) / intervalSec; // Erlangs (traffic intensity)
+  const minN = Math.max(Math.ceil(A) + 1, 1); // must exceed traffic
+  let N = minN;
+  let sl = 0;
+  for(let iter = 0; iter < 500; iter++){
+    sl = serviceLevel(N, A, tTarget, ahtSec);
+    const occ = A / N;
+    if(sl >= slTarget / 100 && occ <= maxOcc / 100) break;
+    N++;
+  }
+  const finalOcc = A / N;
+  const Pc = erlangC(N, A);
+  return {
+    agents: N,
+    traffic: A,
+    sl: serviceLevel(N, A, tTarget, ahtSec),
+    occ: finalOcc,
+    pw: Pc // probability of waiting
+  };
+}
+
+/* Scale per-interval agents to monthly FTE, applying shrinkage */
+function intervalAgentsToFte(agents, util, avail, ftehrs, intervalMins, hoursPerDay){
+  // agents = concurrent agents needed per interval
+  // Scale to monthly: agents are needed throughout operating hours
+  // FTE = agents × (hoursPerDay × workingDays) / ftehrs adjusted for shrinkage
+  const workingDaysPerMonth = modays();
+  const grossHoursPerMonth  = agents * hoursPerDay * workingDaysPerMonth;
+  const attendanceHrs = (grossHoursPerMonth / (1 - util)) / (1 - avail);
+  return Math.ceil(attendanceHrs / ftehrs);
+}
+
+function calcErlang(){
+  const ch          = ERLANG_CHAN || 'phone';
+  const intervalMin = parseInt(g('erlang-interval')?.value) || 60;
+  const slTarget    = parseFloat(g('erlang-sl')?.value)     || 80;
+  const tTarget     = parseFloat(g('erlang-tt')?.value)     || 20;
+  const maxOcc      = parseFloat(g('erlang-maxocc')?.value) || 85;
+  const intervalSec = intervalMin * 60;
+
+  const ahtSec = getAhtSec(ch);
+  const monthlyVol = VOL_PERIOD[ch] === 'annual' ? GLOBAL[ch].vol / 12 : GLOBAL[ch].vol;
+
+  // Hint text
+  const hintEl = g('gs-erlang-hint');
+  if(hintEl){
+    if(!monthlyVol || !ahtSec){
+      hintEl.textContent = 'Enter volume and AHT in the channel tab first, then come back here.';
+    } else {
+      const dailyVol = Math.round(monthlyVol / modays());
+      const volPerInterval = dailyVol / (24 / intervalMin);
+      hintEl.textContent = `Using ${ch} inputs: ${monthlyVol.toLocaleString()} contacts/mo · AHT ${(ahtSec/60).toFixed(1)} min · ~${volPerInterval.toFixed(1)} contacts per ${intervalMin}-min interval`;
+    }
+  }
+
+  const container = g('erlang-cards');
+  if(!container) return;
+
+  // Determine HOOP operating hours for each location (default 9h/day)
+  function getOpHrs(ch){
+    const hoop = getHoopData(ch);
+    return hoop ? hoop.dailyOpHrs : 9;
+  }
+  const opHrsPerDay = getOpHrs(ch);
+
+  const concurrency = (ch === 'chat') ? (GLOBAL.chat.conc || 3) : 1;
+
+  const cards = Array.from({length: N_LOCS}, (_, li) => {
+    const loc       = LOC[li];
+    const vol       = getVol(ch, li);
+    const util      = loc.util / 100;
+    const avail     = loc.occ  / 100;
+    const ftehrs    = getFteHrs(li);
+    const cn        = li + 1;
+
+    if(!vol || !ahtSec){
+      return `<div class="ec-card c${cn}">
+        <div class="ec-head">
+          <div class="ec-loc-name">${CTRY_FLAG[loc.country]} ${loc.name}</div>
+          <div class="ec-loc-country">${CTRY_NAME[loc.country]}</div>
+        </div>
+        <div class="ec-body" style="color:var(--ink4);font-size:11px;padding:16px;text-align:center">No volume / AHT entered</div>
+      </div>`;
+    }
+
+    // Calls per interval (distribute monthly vol across operating intervals)
+    const intervalsPerDay    = opHrsPerDay / (intervalMin / 60);
+    const workingDays        = modays();
+    const totalIntervals     = intervalsPerDay * workingDays;
+    const callsPerInterval   = vol / totalIntervals;
+
+    let result;
+    if(ch === 'email'){
+      // Email doesn't queue — use workload formula with SL buffer
+      const wl = RESULTS.email[li];
+      const slBuffer = 1 + (1 - slTarget / 100) * 0.5; // conservative buffer
+      const erlangAgentCount = Math.ceil((wl.fte || 0) * slBuffer);
+      result = {
+        agents: erlangAgentCount,
+        traffic: (callsPerInterval * ahtSec) / intervalSec,
+        sl: slTarget / 100,
+        occ: Math.min((wl.workloadHrs||0) / ((wl.attendanceHrs||1) * (1-util) * (1-avail)), maxOcc/100),
+        pw: 0
+      };
+    } else {
+      result = erlangAgents(callsPerInterval, ahtSec, intervalSec, slTarget, tTarget, maxOcc);
+    }
+
+    // Scale concurrent agents → monthly FTE
+    let fte = intervalAgentsToFte(result.agents, util, avail, ftehrs, intervalMin, opHrsPerDay);
+    if(ch === 'chat') fte = Math.ceil(fte / concurrency);
+    fte = Math.max(fte, 1);
+
+    // Compare to workload FTE
+    const workloadFte = RESULTS[ch][li].fte || 0;
+    const diff = fte - workloadFte;
+    const diffTxt = workloadFte
+      ? (diff > 0 ? `+${diff} vs workload` : diff < 0 ? `${diff} vs workload` : `= workload`)
+      : '';
+
+    const slPct  = Math.round(result.sl * 100);
+    const occPct = Math.round(result.occ * 100);
+    const pwPct  = Math.round(result.pw  * 100);
+
+    const slClass  = slPct >= slTarget - 1 ? 'ok' : slPct >= slTarget - 5 ? 'warn' : 'err';
+    const occClass = occPct <= maxOcc ? 'safe' : 'warn';
+
+    return `<div class="ec-card c${cn}">
+      <div class="ec-head">
+        <div class="ec-loc-name">${CTRY_FLAG[loc.country]} ${loc.name}</div>
+        <div class="ec-loc-country">${CTRY_NAME[loc.country]}</div>
+      </div>
+      <div class="ec-body">
+        <div class="ec-row"><span class="ec-lbl">Traffic intensity</span><span class="ec-val">${result.traffic.toFixed(2)} Erl</span></div>
+        <div class="ec-row"><span class="ec-lbl">Agents / interval</span><span class="ec-val">${result.agents}</span></div>
+        <div class="ec-row"><span class="ec-lbl">Occ (calculated)</span><span class="ec-val"><span class="ec-occ-pill ${occClass}">${occPct}%</span></span></div>
+        ${ch !== 'email' ? `<div class="ec-row"><span class="ec-lbl">P(wait)</span><span class="ec-val">${pwPct}%</span></div>` : ''}
+        <div class="ec-divider"></div>
+        <div class="ec-fte-box">
+          <div class="ec-fte-box-lbl">🔢 Erlang C FTE</div>
+          <div class="ec-fte-box-val">${fte}</div>
+          <div class="ec-fte-box-sub">
+            <span class="ec-sl-badge ${slClass}">✓ SL ~${slPct}% in ${tTarget}s</span>
+            ${diffTxt ? `<div class="ec-vs-workload">${diffTxt} (workload: ${workloadFte})</div>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
   });
 
-  refreshRolesTable();
-  updatePricingNote();
-  syncRatios();
-  calc();
+  container.innerHTML = cards.join('');
+
+  // Update pip
+  const totErlang = Array.from({length:N_LOCS},(_,li)=>{
+    const vol = getVol(ch, li);
+    if(!vol || !ahtSec) return 0;
+    const opHrsPerDay  = getOpHrs(ch);
+    const intervalsPerDay  = opHrsPerDay / (intervalMin / 60);
+    const callsPerInterval = vol / (intervalsPerDay * modays());
+    if(ch === 'email'){
+      const wl = RESULTS.email[li];
+      const slBuffer = 1 + (1 - slTarget / 100) * 0.5;
+      return Math.max(Math.ceil((wl.fte||0) * slBuffer), 1);
+    }
+    const r = erlangAgents(callsPerInterval, ahtSec, intervalSec, slTarget, tTarget, maxOcc);
+    let fte = intervalAgentsToFte(r.agents, LOC[li].util/100, LOC[li].occ/100, getFteHrs(li), intervalMin, opHrsPerDay);
+    if(ch === 'chat') fte = Math.ceil(fte / (GLOBAL.chat.conc||1.2));
+    return Math.max(fte, 1);
+  }).reduce((a,b)=>a+b,0);
+  st('pip-erlang', totErlang || '—');
 }
 
-// ── Main calculation ───────────────────────────────────────────────────────────
+/* ════════════════════════════════════════════════
+   HOW TO USE GUIDE
+════════════════════════════════════════════════ */
+const GUIDE_TOTAL = 7;
+let guidePage = 0;
 
-function calc(){
-  const loc    = document.getElementById('location').value;
-  const tier   = document.querySelector('input[name="tier"]:checked').value;
-  const agents = parseInt(document.getElementById('agents').value) || 1;
-  const months = parseInt(document.querySelector('input[name="contract"]:checked').value);
-  const gm     = parseFloat(document.getElementById('gmPct').value) || 0;
-  const model  = document.querySelector('input[name="model"]:checked').value;
-  const pModel = document.getElementById('pricingModel').value;
-
-  document.getElementById('silotechRow').style.display = loc === 'US' ? 'block' : 'none';
-  document.getElementById('hiringRow').style.display   = loc === 'IN' ? 'block' : 'none';
-  document.getElementById('zaSupportStaffRow').style.display = loc === 'ZA' ? 'block' : 'none';
-
-  let totalRoles = 0, totalSupportHC = 0, totalAutoHC = 0, totalCountHC = 0;
-  ROLES.forEach(role => {
-    const sr         = role.replace(/\s+/g,'_');
-    const autoText   = document.getElementById(`rah_${sr}`).textContent;
-    const autoHC     = autoText === '—' ? 0 : (parseFloat(autoText)||0);
-    const overrideHC = parseFloat(document.getElementById(`rc_${sr}`).value) || 0;
-    totalAutoHC   += autoHC;
-    totalCountHC  += overrideHC;
-    totalRoles    += getRoleMonthlyUSD(sr, loc) * overrideHC;
-    totalSupportHC += overrideHC;
-  });
-  document.getElementById('totalAutoHC').textContent  = totalAutoHC  > 0 ? totalAutoHC.toFixed(2)  : '—';
-  document.getElementById('totalCountHC').textContent = totalCountHC > 0 ? totalCountHC.toFixed(2) : '—';
-
-  const totalHC   = agents + totalSupportHC;
-  const agWageUSD = getAgentUSD(loc, tier);
-  const totalWage = agWageUSD * agents;
-  const s         = SEAT[loc];
-  const totalSeat = toUSD((model === 'waha' && loc !== 'ZA') ? 0 : s.amount, s.currency) * totalHC;
-
-  let totalIT = 0;
-  Object.entries(IT_SEL).forEach(([k,v]) => { if(v) totalIT += IT_USD[k] * totalHC; });
-
-  const miscMo = months > 0
-    ? ((parseFloat(document.getElementById('mTravel').value)||0) +
-       (parseFloat(document.getElementById('mCompliance').value)||0) +
-       (parseFloat(document.getElementById('mImpl').value)||0) +
-       (parseFloat(document.getElementById('mSupportStaff').value)||0)) / months : 0;
-
-  let silotechMo = 0;
-  if(loc === 'US'){
-    silotechMo = 126 * totalHC;
-    document.getElementById('silotechAmt').textContent = fmtD(silotechMo) + ' / mo';
+function openGuide(startPage){
+  guidePage = startPage || 0;
+  renderGuidePage();
+  g('guideOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeGuide(){
+  g('guideOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function onGuideOverlayClick(e){
+  if(e.target === g('guideOverlay')) closeGuide();
+}
+function guideNav(dir){
+  guidePage = Math.max(0, Math.min(GUIDE_TOTAL - 1, guidePage + dir));
+  renderGuidePage();
+}
+function renderGuidePage(){
+  // Slides
+  document.querySelectorAll('.gm-slide').forEach((s,i) => s.classList.toggle('active', i === guidePage));
+  // Dots
+  const dotsEl = g('gm-dots');
+  if(dotsEl){
+    dotsEl.innerHTML = Array.from({length: GUIDE_TOTAL}, (_,i) =>
+      `<div class="gm-dot${i===guidePage?' active':''}" onclick="guidePage=${i};renderGuidePage()"></div>`
+    ).join('');
   }
-
-  let hiringMo = 0;
-  if(loc === 'IN' && months > 0){
-    const agHiring = getAgentBaseMonthlyUSD('IN', tier) * agents;
-    const roleHiring = ROLES.reduce((acc, role) => {
-      const sr = role.replace(/\s+/g,'_');
-      return acc + getRoleBaseMonthlyUSD(sr,'IN') * (parseFloat(document.getElementById(`rc_${sr}`).value)||0);
-    }, 0);
-    hiringMo = (agHiring + roleHiring) / months;
-    document.getElementById('hiringAmt').textContent = fmtD(hiringMo) + ' / mo';
+  // Counter
+  st('gm-counter', `${guidePage + 1} of ${GUIDE_TOTAL}`);
+  // Buttons
+  const prevBtn = g('gm-btn-prev');
+  const nextBtn = g('gm-btn-next');
+  if(prevBtn) prevBtn.style.visibility = guidePage === 0 ? 'hidden' : 'visible';
+  if(nextBtn){
+    const isLast = guidePage === GUIDE_TOTAL - 1;
+    nextBtn.textContent = isLast ? '✓ Done' : 'Next →';
+    nextBtn.className   = isLast ? 'gm-btn gm-btn-done' : 'gm-btn gm-btn-next';
+    nextBtn.onclick     = isLast ? closeGuide : () => guideNav(1);
   }
+}
 
-  const subtotal    = totalWage + totalRoles + totalSeat + totalIT + miscMo + silotechMo + hiringMo;
-  const total       = gm < 100 ? subtotal / (1 - gm/100) : subtotal;
-  const gmAmt       = total - subtotal;
-  const cmPct       = total > 0 ? ((total - totalWage - totalRoles) / total) * 100 : 0;
-  const pricePerFTE = agents > 0 ? total / agents : 0;
-
-  // CM alerts
-  const cmNote  = document.getElementById('cmNote');
-  const alertEl = document.getElementById('cmAlert');
-  alertEl.style.display = 'none';
-  document.getElementById('sCM').style.color = 'var(--k-blue)';
-  if(loc === 'UK')      cmNote.textContent = '(min. 20%)';
-  else if(loc === 'PH') cmNote.textContent = '(min. 50%)';
-  else                  cmNote.textContent = '';
-
-  if(loc === 'UK' && cmPct < 20 && total > 0){
-    document.getElementById('sCM').style.color = 'var(--k-danger)';
-    alertEl.textContent = '⚠ Increase GM% — CM must be at least 20% for UK';
-    alertEl.style.display = 'block';
-  } else if(loc === 'PH' && cmPct < 50 && total > 0){
-    document.getElementById('sCM').style.color = 'var(--k-danger)';
-    alertEl.textContent = '⚠ Increase GM% — CM must be at least 50% for Philippines';
-    alertEl.style.display = 'block';
-  }
-
-  // Pricing model
-  const att   = ATT_HRS[loc];
-  const prod  = att * AVAIL_PCT;
-  const trans = att * AVAIL_PCT * OCC_PCT;
-  let modelPrice = 0, modelUnit = '/ FTE / mo', modelDp = 0;
-  switch(pModel){
-    case 'fte':         modelPrice = pricePerFTE;           modelUnit = '/ FTE / mo';       modelDp = 0; break;
-    case 'attendance':  modelPrice = pricePerFTE / att;     modelUnit = '/ att. hr';        modelDp = 2; break;
-    case 'productive':  modelPrice = pricePerFTE / prod;    modelUnit = '/ prod. hr';       modelDp = 2; break;
-    case 'transaction': modelPrice = pricePerFTE / trans;   modelUnit = '/ trans. hr';      modelDp = 2; break;
-    case 'minute':      modelPrice = (pricePerFTE/trans)/60;modelUnit = '/ min';            modelDp = 4; break;
-  }
-
-  const pmEl    = document.getElementById('pricingModel');
-  const pmLabel = pmEl.options[pmEl.selectedIndex].text;
-
-  // Update DOM
-  document.getElementById('sPricing').textContent  = pmLabel;
-  document.getElementById('sLoc').textContent      = `${loc} · T${tier}`;
-  document.getElementById('sAgents').textContent   = `${agents} + ${totalSupportHC.toFixed(2)} support`;
-  document.getElementById('sContract').textContent = CLABELS[months] || `${months}mo`;
-  document.getElementById('sWage').textContent     = fmtD(totalWage);
-  document.getElementById('sRoles').textContent    = fmtD(totalRoles);
-  document.getElementById('sSeat').textContent     = fmtD(totalSeat);
-  document.getElementById('sIT').textContent       = fmtD(totalIT);
-  document.getElementById('sMisc').textContent     = fmtD(miscMo + silotechMo + hiringMo);
-  document.getElementById('sSub').textContent      = fmtD(subtotal);
-  document.getElementById('sGM').textContent       = gm > 0 ? fmtD(gmAmt) : '—';
-  document.getElementById('sCM').textContent       = total > 0 ? `${cmPct.toFixed(1)}%` : '—';
-  document.getElementById('tTotal').textContent    = fmtD(total);
-  document.getElementById('tSub').textContent      = gm > 0 ? `Cost ÷ (1 − ${gm}%)` : 'no GM applied';
-
-  document.getElementById('paW').textContent   = fmtD(agWageUSD);
-  document.getElementById('paR').textContent   = fmtD(totalSupportHC > 0 ? totalRoles/agents : 0);
-  document.getElementById('paS').textContent   = fmtD(totalSeat/agents);
-  document.getElementById('paIT').textContent  = fmtD(totalIT/agents);
-  document.getElementById('paM').textContent   = fmtD((miscMo+silotechMo+hiringMo)/agents);
-  document.getElementById('paFTE').textContent = fmtD(pricePerFTE);
-  document.getElementById('breakdownLabel').textContent = pmLabel;
-  document.getElementById('paT').textContent   = `${fmtD(modelPrice, modelDp)} ${modelUnit}`;
-
-  // Hero TCO + ITY + TCV
-  document.getElementById('heroTCO').textContent = fmtD(total);
-
-  // ITY: Monthly TCO × remaining months in calendar year (13 - startMonth)
-  const startMonth = parseInt(document.getElementById('startMonth').value) || 1;
-  const remainingMonths = 13 - startMonth; // June=6 → 13-6=7? No: Jan=12, Dec=1
-  // Remaining months including start month: Jan=12, Feb=11, ... Dec=1
-  const ityMonths = 13 - startMonth;
-  const ity = total * ityMonths;
-  document.getElementById('heroITY').textContent = fmtD(ity);
-  document.getElementById('heroITYUnit').textContent = `${ityMonths} month${ityMonths !== 1 ? 's' : ''} remaining in year`;
-
-  // TCV: Monthly TCO × contract months
-  const tcv = total * months;
-  document.getElementById('heroTCV').textContent = fmtD(tcv);
-  document.getElementById('heroTCVUnit').textContent = `over ${CLABELS[months] || months + ' mo'}`;
-
-  if(gm > 0){
-    document.getElementById('gmBox').style.display = 'block';
-    document.getElementById('gmBase').textContent  = fmtD(subtotal);
-    document.getElementById('gmAmt').textContent   = fmtD(gmAmt);
-    document.getElementById('gmPrice').textContent = fmtD(total);
+/* ════════════════════════════════════════════════
+   HOME MODAL
+════════════════════════════════════════════════ */
+function showHomeModal(){
+  g('homeModal').classList.add('show');
+}
+function closeHomeModal(){
+  g('homeModal').classList.remove('show');
+}
+function goHome(){
+  // Go back to the referring page (the Presales Suite Hub), or use history
+  if(document.referrer && document.referrer !== window.location.href){
+    window.location.href = document.referrer;
   } else {
-    document.getElementById('gmBox').style.display = 'none';
+    window.history.back();
   }
 }
+// Close modal if overlay background is clicked
+document.getElementById('homeModal').addEventListener('click', function(e){
+  if(e.target === this) closeHomeModal();
+});
 
-// ── Quote ──────────────────────────────────────────────────────────────────────
-
-function genQuote(){
-  const loc      = document.getElementById('location').value;
-  const tier     = document.querySelector('input[name="tier"]:checked').value;
-  const agents   = document.getElementById('agents').value;
-  const engModel = document.querySelector('input[name="model"]:checked').value.toUpperCase();
-  const months   = document.querySelector('input[name="contract"]:checked').value;
-  const gm       = document.getElementById('gmPct').value || '0';
-  const ccy      = document.getElementById('displayCurrency').value;
-  const pmEl     = document.getElementById('pricingModel');
-  const agFringe = getFringe(loc, true);
-  const itOn     = Object.entries(IT_SEL).filter(([,v])=>v).map(([k])=>k.toUpperCase()).join(', ')||'None';
-  const rolesOn  = ROLES
-    .filter(r => (parseFloat(document.getElementById(`rc_${r.replace(/\s+/g,'_')}`)?.value)||0) > 0)
-    .map(r => {
-      const sr    = r.replace(/\s+/g,'_');
-      const ratio = document.getElementById(`rr_${sr}`)?.value || '—';
-      const count = document.getElementById(`rc_${sr}`).value;
-      return `  ${r}: 1:${ratio} → ${count} HC @ $${Math.round(getRoleMonthlyUSD(sr,loc)).toLocaleString()}/mo`;
-    }).join('\n');
-
-  const lines = [
-    `ESM SF REVENUE & CM CALCULATOR — INDICATIVE`,
-    `──────────────────────────────────`,
-    `Location        : ${LOC_NAMES[loc]}`,
-    `Agent Tier      : Tier ${tier}`,
-    `Engagement      : ${engModel}`,
-    `Pricing Model   : ${pmEl.options[pmEl.selectedIndex].text}`,
-    `Display Currency: ${ccy}`,
-    `Agents          : ${agents}`,
-    `Headcount       : ${document.getElementById('sAgents').textContent}`,
-    `Contract        : ${CLABELS[months]}`,
-    `Start Month     : ${document.getElementById('startMonth').options[document.getElementById('startMonth').selectedIndex].text}`,
-    `──────────────────────────────────`,
-    `Agent Wages     : ${document.getElementById('sWage').textContent} / mo (${Math.round(agFringe*100)}% fringe incl.)`,
-    `Support Roles   : ${document.getElementById('sRoles').textContent} / mo`,
-    rolesOn || `  (none configured)`,
-    `Seat Costs      : ${document.getElementById('sSeat').textContent} / mo`,
-    `IT Costs        : ${document.getElementById('sIT').textContent} / mo  [${itOn}]`,
-    `Misc (amort.)   : ${document.getElementById('sMisc').textContent} / mo`,
-    `──────────────────────────────────`,
-    `Total Cost      : ${document.getElementById('sSub').textContent} / mo`,
-    `GM (${gm}%)       : ${document.getElementById('sGM').textContent}`,
-    `Contribution M. : ${document.getElementById('sCM').textContent}`,
-    `MONTHLY TCO     : ${document.getElementById('tTotal').textContent} / mo`,
-    `ITY Revenue     : ${document.getElementById('heroITY').textContent} (${document.getElementById('heroITYUnit').textContent})`,
-    `TCV             : ${document.getElementById('heroTCV').textContent} (${CLABELS[months]})`,
-    `──────────────────────────────────`,
-    `Price per FTE   : ${document.getElementById('paFTE').textContent}`,
-    `${pmEl.options[pmEl.selectedIndex].text.padEnd(16)}: ${document.getElementById('paT').textContent}`,
-    `──────────────────────────────────`,
-    `* Indicative only. FX rates approximate.`,
-    `* Final pricing subject to agreed SLA & scope.`,
-  ].join('\n');
-
-  document.getElementById('qContent').textContent = lines;
-  document.getElementById('qModal').style.display = 'flex';
-}
-
-function copyQ(){
-  navigator.clipboard.writeText(document.getElementById('qContent').textContent)
-    .then(() => alert('Copied to clipboard!'));
-}
-
-// ── Init ───────────────────────────────────────────────────────────────────────
-// Default Start Month to current calendar month
-document.getElementById('startMonth').value = new Date().getMonth() + 1;
-buildRoles();
-buildSeat();
-onLocChange();
+/* ════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════ */
+buildAllRows();
+updateTopbarShrink();
+calcAll();
+// Show equal-mode disclaimer by default (equal is the default mode)
+const _disc = g('eq-disclaimer');
+if(_disc) _disc.classList.add('show');
 </script>
 </body>
 </html>
